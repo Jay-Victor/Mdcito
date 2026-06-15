@@ -1,0 +1,346 @@
+Mdcito Copyright (C) 2026 Jay-Victor. All rights reserved.
+Mdcito 版权所有 (C) 2026 Jay-Victor，保留所有权利。
+
+================================================================================
+            Mdcito 开源协议 / Mdcito Open Source License
+================================================================================
+
+本协议采用中文与英文双语撰写。中文版本在前，英文版本在后。如两个版本之间存在
+不一致，以中文版本为准。
+
+This License is written in both Chinese and English. The Chinese version comes
+first, followed by the English version. In case of any inconsistency between the
+two versions, the Chinese version shall prevail.
+
+================================================================================
+
+## 一、概述
+
+Mdcito（以下简称"本软件"）由 Jay-Victor（以下简称"原作者"）开发并维护。
+本软件采用双协议授权模式，用户可根据自身需求选择以下任一许可协议使用本软件：
+
+  (A) 开源版本 —— 基于 GNU Affero General Public License v3.0 (AGPL-3.0) 许可；
+  (B) 商业版本 —— 基于商业授权许可。
+
+## 二、开源版本（AGPL-3.0）
+
+### 2.1 许可证
+
+开源版本基于 GNU Affero General Public License version 3（AGPL-3.0）许可。
+AGPL-3.0 是 GNU 通用公共许可证的 Affero 版本，由自由软件基金会发布。
+AGPL-3.0 协议副本可在以下地址获取：https://www.gnu.org/licenses/agpl-3.0.html
+
+本软件不随附 AGPL-3.0 协议全文。如需查阅完整的 AGPL-3.0 协议条款，请访问
+上述链接。
+
+### 2.2 适用条件
+
+选择开源版本的用户，在遵守 AGPL-3.0 全部条款的前提下，享有以下权利：
+
+  (a) 个人使用、学术研究、非商业目的的使用完全免费；
+  (b) 可以自由查看、复制、修改和分发本软件的源代码（修改后的源代码
+      必须以相同协议开源）；
+  (c) 可以在非商业环境中部署和运行本软件。
+
+### 2.3 AGPL-3.0 核心要点
+
+以下为 AGPL-3.0 核心条款摘要，仅供参考。完整法律条款以 AGPL-3.0 协议原文
+为准（https://www.gnu.org/licenses/agpl-3.0.html）：
+
+  (1) 源代码披露义务（第 13 条）：如果您修改了本软件并通过网络向公众提供
+      服务（包括 SaaS 部署），您必须向所有服务使用者提供修改后的完整源代码。
+      这意味着即使您没有分发本软件的副本，仅通过网络提供服务，也触发了
+      源代码公开义务。这是 AGPL-3.0 与 GPL-3.0 的核心区别。
+
+  (2) Copyleft 传染性（第 5 条）：任何对本软件的修改和衍生作品，必须以
+      相同许可证（AGPL-3.0）发布。您不得将基于本软件的修改作品以其他
+      许可证（包括更宽松的许可证）发布。
+
+  (3) 专利授权与终止（第 11 条）：每位贡献者自动授予用户其贡献所涉及的
+      专利权许可。但如果用户对任何贡献者提起专利侵权诉讼，则该用户根据
+      本协议获得的所有专利许可立即终止。
+
+  (4) 无担保声明（第 15、16 条）：本软件按"原样"提供，不提供任何形式的
+      担保。原作者不对使用本软件造成的任何损失承担责任。
+
+  (5) 必须保留版权声明和许可证声明（第 4、5 条）：所有副本和修改版本
+      必须保留原作者的版权声明和许可证声明。原作者署名 "Jay-Victor" 必须
+      予以保留，不得删除或篡改。
+
+  (6) 禁止次级许可（第 10 条）：您不得对本软件或其衍生作品进行次级许可。
+
+### 2.4 开源版本使用者的权利与义务
+
+【您可以做什么】：
+  ✓ 出于个人学习、研究目的使用本软件。
+  ✓ 出于非商业目的查看、修改本软件的源代码。
+  ✓ 在遵守 AGPL-3.0 条款的前提下，将本软件用于非商业项目。
+  ✓ 向社区贡献代码修改和改进。
+
+【您必须做什么】：
+  ✦ 保留原作者署名 "Jay-Victor" 及所有版权声明。
+  ✦ 如果您修改了本软件并通过网络提供服务，必须公开修改后的完整源代码。
+  ✦ 任何衍生作品必须以相同许可证（AGPL-3.0）发布。
+  ✦ 在分发副本时，必须随附本许可证及 AGPL-3.0 协议副本或链接。
+
+【您不能做什么】：
+  ✗ 未经商业授权，将本软件或其衍生作品用于商业目的。
+  ✗ 删除或篡改原作者的版权声明和署名。
+  ✗ 将基于本软件的修改作品以非 AGPL-3.0 许可证发布（次级许可）。
+  ✗ 将 AGPL-3.0 代码与闭源商业代码混合，试图规避开源义务。
+  ✗ 使用原作者的名义或商标进行未经授权的宣传。
+
+## 三、商业版本（商业授权）
+
+### 3.1 商业授权概述
+
+如果您希望将本软件用于商业目的，或以闭源方式使用本软件，或以其他不受
+AGPL-3.0 限制的方式使用本软件，您必须购买商业授权。
+
+商业授权允许您：
+  ✓ 闭源使用本软件，无需公开修改后的源代码。
+  ✓ 不受 AGPL-3.0 Copyleft 条款的限制。
+  ✓ 将本软件集成到商业产品中进行销售或分发。
+  ✓ 在商业环境中部署和运行本软件，包括但不限于 SaaS 服务。
+  ✓ 获得优先技术支持和商业级服务保障（视具体协议而定）。
+
+### 3.2 商业定价
+
+商业授权费用根据企业规模分级定价，提供月付、年付和买断制三种方案：
+
+| 用户类别                    | 月付        | 年付        | 买断制       |
+|-----------------------------|-------------|-------------|-------------|
+| 个人企业                     | ¥6/月       | ¥60/年      | ¥90         |
+| 微型企业（10 人以下）        | ¥8/月       | ¥68/年      | ¥128        |
+| 小型企业（10-50 人）         | ¥18/月      | ¥168/年     | ¥328        |
+| 中型企业（50-100 人）        | ¥38/月      | ¥368/年     | ¥668        |
+| 大型企业（100 人以上）       | ¥78/月      | ¥768/年     | ¥1,528      |
+| 特殊情况（教育机构、政府机构）| ¥36/月      | ¥256/年     | ¥520        |
+
+说明：
+  - "企业人数"统计包括所有能够访问、使用或以任何方式受益于本软件的个人，
+    包括开发人员、运维人员、测试人员及最终用户。
+  - 买断制授权适用于该企业当前规模下的永久使用权，企业规模扩大需升级授权。
+  - 所有价格均为含税价格，以人民币结算。
+  - 原作者保留随时调整定价的权利，已购买授权的用户不受价格调整影响。
+
+### 3.3 商业授权联系方式
+
+如需购买商业授权或有任何商业合作咨询，请通过以下方式联系原作者：
+
+  QQ：1061037299
+  邮箱：18261738221@163.com
+
+请注明您的企业名称、规模及具体需求，我们将尽快回复。
+
+## 四、开源组件声明
+
+本软件开发过程中使用了以下类别开源组件的支持。完整的开源组件清单、版本号
+及各自的许可证信息，请参阅本软件内"开源组件"页面（设置 > 关于 > 开源组件）。
+该页面列出了本项目使用的全部开源组件及其许可证，点击可访问对应项目仓库。
+
+本软件所使用的开源组件各自遵循其原始许可证，包括但不限于 MIT License、
+Apache License 2.0、BSD License 等。这些开源组件的版权归其各自作者所有，
+本协议不影响各开源组件原有许可证的效力。
+
+## 五、免责声明
+
+本软件按"原样"（"AS IS"）提供，不提供任何明示或暗示的保证，包括但不限于
+对适销性、特定用途适用性和非侵权性的保证。
+
+在任何情况下，原作者或版权持有人均不对任何索赔、损害或其他责任负责，无论是
+在合同诉讼、侵权诉讼或其他诉讼中，还是因本软件或本软件的使用或其他交易而产生
+的，即使已被告知发生此类损害的可能性。
+
+使用本软件的风险由您自行承担。本软件可能包含技术错误或其他不准确之处，原作者
+不保证本软件的功能完全满足您的要求，也不保证本软件的运行不会发生中断或错误。
+
+================================================================================
+
+## 1. Overview
+
+Mdcito (hereinafter referred to as "the Software") is developed and maintained
+by Jay-Victor (hereinafter referred to as "the Author"). The Software is
+distributed under a dual-license model. Users may choose either of the following
+license options to use the Software:
+
+  (A) Open Source Edition —— Licensed under GNU Affero General Public License
+      v3.0 (AGPL-3.0);
+  (B) Commercial Edition —— Licensed under a commercial license.
+
+## 2. Open Source Edition (AGPL-3.0)
+
+### 2.1 License
+
+The Open Source Edition is licensed under the GNU Affero General Public License
+version 3 (AGPL-3.0). AGPL-3.0 is the Affero version of the GNU General Public
+License, published by the Free Software Foundation. A copy of the AGPL-3.0
+license is available at: https://www.gnu.org/licenses/agpl-3.0.html
+
+This Software does not ship with the full text of the AGPL-3.0 license. To view
+the complete AGPL-3.0 terms, please visit the link above.
+
+### 2.2 Applicability
+
+Users who choose the Open Source Edition, provided they comply with all terms
+of AGPL-3.0, are entitled to the following rights:
+
+  (a) Completely free for personal use, academic research, and non-commercial
+      purposes;
+  (b) Freedom to view, copy, modify, and distribute the source code of the
+      Software (modified source code must be open-sourced under the same
+      license);
+  (c) Permission to deploy and run the Software in non-commercial environments.
+
+### 2.3 Key Points of AGPL-3.0
+
+The following is a summary of the core provisions of AGPL-3.0 for reference
+only. Please refer to the full legal text at https://www.gnu.org/licenses/
+agpl-3.0.html for the complete terms:
+
+  (1) Source Code Disclosure Obligation (Section 13): If you modify the
+      Software and provide services to the public over a network (including
+      SaaS deployment), you must provide the complete modified source code to
+      all users of the service. This means that even if you do not distribute
+      copies, merely offering network-based services triggers the source
+      code disclosure obligation. This is the core difference between
+      AGPL-3.0 and GPL-3.0.
+
+  (2) Copyleft Propagation (Section 5): Any modifications and derivative
+      works based on the Software must be released under the same license
+      (AGPL-3.0). You may not release modified works based on the Software
+      under any other license (including more permissive ones).
+
+  (3) Patent Grant and Termination (Section 11): Each contributor
+      automatically grants users a patent license for the contributed code.
+      However, if any user initiates patent litigation against any
+      contributor, all patent licenses granted under this License to that
+      user shall terminate immediately.
+
+  (4) Disclaimer of Warranty (Sections 15, 16): The Software is provided
+      "as is" without warranty of any kind. The Author shall not be liable
+      for any damages arising from the use of the Software.
+
+  (5) Retention of Copyright and License Notices (Sections 4, 5): All copies
+      and modified versions must retain the original copyright notice and
+      license notice. The authorship attribution "Jay-Victor" must be
+      preserved and shall not be removed or altered.
+
+  (6) Sublicensing Prohibited (Section 10): You may not sublicense the
+      Software or its derivative works.
+
+### 2.4 Rights and Obligations of Open Source Edition Users
+
+【What You CAN Do】:
+  ✓ Use the Software for personal study and research purposes.
+  ✓ View and modify the source code for non-commercial purposes.
+  ✓ Use the Software in non-commercial projects, subject to AGPL-3.0 terms.
+  ✓ Contribute code modifications and improvements to the community.
+
+【What You MUST Do】:
+  ✦ Retain the authorship attribution "Jay-Victor" and all copyright notices.
+  ✦ If you modify the Software and provide network-based services, you must
+    disclose the complete modified source code.
+  ✦ Any derivative works must be released under the same license (AGPL-3.0).
+  ✦ Include this License and the AGPL-3.0 license (or a link to it) with
+    any distribution.
+
+【What You MUST NOT Do】:
+  ✗ Use the Software or its derivatives for commercial purposes without a
+    commercial license.
+  ✗ Remove or alter the original copyright notices and authorship attribution.
+  ✗ Release modified works based on the Software under a non-AGPL-3.0 license
+    (sublicensing).
+  ✗ Mix AGPL-3.0 code with closed-source commercial code in an attempt to
+    circumvent the open source obligations.
+  ✗ Use the Author's name or trademarks for unauthorized promotion.
+
+## 3. Commercial Edition (Commercial License)
+
+### 3.1 Overview
+
+If you wish to use the Software for commercial purposes, or use it in a
+closed-source manner, or use it in any way that is not permitted by AGPL-3.0,
+you must purchase a commercial license.
+
+The commercial license allows you to:
+  ✓ Use the Software closed-source, without disclosing modified source code.
+  ✓ Be exempt from AGPL-3.0 Copyleft restrictions.
+  ✓ Integrate the Software into commercial products for sale or distribution.
+  ✓ Deploy and run the Software in commercial environments, including but
+    not limited to SaaS services.
+  ✓ Receive priority technical support and commercial-grade service
+    guarantees (subject to specific agreements).
+
+### 3.2 Commercial Pricing
+
+Commercial licensing fees are tiered by organization size, with monthly,
+annual, and one-time purchase options:
+
+| User Category                             | Monthly     | Annual      | Perpetual    |
+|-------------------------------------------|-------------|-------------|-------------|
+| Individual / Sole Proprietor               | ¥6/mo       | ¥60/yr      | ¥90          |
+| Micro Enterprise (fewer than 10 people)    | ¥8/mo       | ¥68/yr      | ¥128         |
+| Small Enterprise (10-50 people)            | ¥18/mo      | ¥168/yr     | ¥328         |
+| Medium Enterprise (50-100 people)          | ¥38/mo      | ¥368/yr     | ¥668         |
+| Large Enterprise (over 100 people)         | ¥78/mo      | ¥768/yr     | ¥1,528       |
+| Special Cases (Educational & Government)   | ¥36/mo      | ¥256/yr     | ¥520         |
+
+Notes:
+  - "Number of people" includes all individuals who can access, use, or
+    benefit from the Software in any way, including developers, operators,
+    testers, and end users.
+  - The perpetual license grants permanent usage rights for the current
+    organization size. If the organization grows, a license upgrade is
+    required.
+  - All prices are inclusive of tax and settled in CNY (Renminbi).
+  - The Author reserves the right to adjust pricing at any time. Users who
+    have already purchased licenses will not be affected by price changes.
+
+### 3.3 Contact for Commercial Licensing
+
+For commercial license purchases or any business cooperation inquiries,
+please contact the Author via:
+
+  QQ: 1061037299
+  Email: 18261738221@163.com
+
+Please include your organization name, size, and specific requirements.
+We will respond as soon as possible.
+
+## 4. Open Source Components Declaration
+
+The development of this Software has benefited from support from the
+following categories of open source components. For the complete list of
+open source components, their versions, and respective licenses, please
+refer to the "Open Source Components" page within the Software
+(Settings > About > Open Source Components). This page lists all open
+source components used in this project along with their license information,
+and you can click through to visit each project's repository.
+
+The open source components used by this Software are each governed by their
+original licenses, including but not limited to MIT License, Apache License
+2.0, BSD License, etc. The copyright of these open source components belongs
+to their respective authors. This License does not affect the validity of
+the original licenses of each open source component.
+
+## 5. Disclaimer of Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR
+OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE
+USE OF OR OTHER DEALINGS IN THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+OF SUCH DAMAGE.
+
+YOU ASSUME ALL RISKS ASSOCIATED WITH THE USE OF THE SOFTWARE. THE SOFTWARE
+MAY CONTAIN TECHNICAL INACCURACIES OR OTHER ERRORS. THE AUTHOR DOES NOT
+WARRANT THAT THE FUNCTIONS OF THE SOFTWARE WILL MEET YOUR REQUIREMENTS,
+NOR THAT THE OPERATION OF THE SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE.
+
+================================================================================
+                         End of License / 协议结束
+================================================================================

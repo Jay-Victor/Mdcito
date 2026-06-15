@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <exclude domain="sharedpref" path="settings.preferences_pb" />
+    <exclude domain="sharedpref" path="image_host_secrets.xml" />
+    <exclude domain="sharedpref" path="cloud_sync_secrets.xml" />
+    <exclude domain="sharedpref" path="image_host_secrets_unavailable.xml" />
+    <exclude domain="sharedpref" path="cloud_sync_secrets_unavailable.xml" />
+    <exclude domain="sharedpref" path="sftp_known_hosts.xml" />
+    <exclude domain="database" path="." />
+    <exclude domain="file" path="." />
+</full-backup-content>
