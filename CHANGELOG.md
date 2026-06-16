@@ -7,6 +7,16 @@
 
 ---
 
+## [1.0.4] - 2026-06-16
+
+### Fixed
+
+#### 开场动画
+- 修复开场动画开关设置不生效的问题：`collectAsState(initial = true)` 在 DataStore 加载完成前返回初始值 `true`，导致即使用户关闭了开场动画，启动时仍会显示
+- 改为直接从 Flow collect 真实值后再决定是否显示开场动画，避免初始值干扰
+
+---
+
 ## [1.0.3] - 2026-06-16
 
 ### Fixed
@@ -133,6 +143,7 @@
 
 ---
 
+[1.0.4]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.4
 [1.0.3]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.3
 [1.0.2]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.1

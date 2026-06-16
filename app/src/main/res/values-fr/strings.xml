@@ -106,6 +106,8 @@
     <string name="background_settings_subtitle">Image de fond, flou, luminosité</string>
     <string name="card_nav_style">Style des cartes et de la navigation</string>
     <string name="card_nav_style_subtitle">Style de carte, transparence, style de bouton</string>
+    <string name="transition_settings">Animations de transition</string>
+    <string name="transition_settings_subtitle">Animation de démarrage, effets de transition</string>
 
     <!-- Theme Settings -->
     <string name="theme_mode">Mode de thème</string>
@@ -174,6 +176,11 @@
     <string name="status_bar_preview">Aperçu de barre d\'état</string>
     <string name="transparency_level">Transparence</string>
     <string name="liquid_glass_transparency">Transparence verre liquide</string>
+
+    <!-- Transition Settings -->
+    <string name="animation_group">Paramètres d\'animation</string>
+    <string name="splash_animation_title">Animation de démarrage</string>
+    <string name="splash_animation_desc">Afficher l\'animation du logo lors du démarrage</string>
 
     <!-- Background Settings -->
     <string name="background_image">Image de fond</string>

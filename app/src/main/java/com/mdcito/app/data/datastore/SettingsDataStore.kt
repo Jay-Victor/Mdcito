@@ -155,6 +155,9 @@ class SettingsDataStore @Inject constructor(
         val AUTO_CHECK_UPDATE = booleanPreferencesKey("auto_check_update")
         val UPDATE_SOURCE = stringPreferencesKey("update_source")
         val LAST_UPDATE_CHECK_TIME = longPreferencesKey("last_update_check_time")
+
+        // ── 过渡动画设置 ──
+        val SPLASH_ANIMATION_ENABLED = booleanPreferencesKey("splash_animation_enabled")
     }
 
     val themeMode: Flow<String> = dataStore.data.map { it[Keys.THEME_MODE] ?: "SYSTEM" }
@@ -691,6 +694,10 @@ class SettingsDataStore @Inject constructor(
     suspend fun setUpdateSource(source: String) { dataStore.edit { it[Keys.UPDATE_SOURCE] = source } }
     suspend fun setLastUpdateCheckTime(time: Long) { dataStore.edit { it[Keys.LAST_UPDATE_CHECK_TIME] = time } }
 
+    // ── 过渡动画设置 ──
+    val splashAnimationEnabled: Flow<Boolean> = dataStore.data.map { it[Keys.SPLASH_ANIMATION_ENABLED] ?: true }
+    suspend fun setSplashAnimationEnabled(enabled: Boolean) { dataStore.edit { it[Keys.SPLASH_ANIMATION_ENABLED] = enabled } }
+
     /**
      * 将所有设置项恢复为默认值。
      * 通过一次性编辑 DataStore，将所有 Key 重置为初始默认值。
@@ -818,6 +825,9 @@ class SettingsDataStore @Inject constructor(
             prefs[Keys.AUTO_CHECK_UPDATE] = true
             prefs[Keys.UPDATE_SOURCE] = "AUTO"
             prefs[Keys.LAST_UPDATE_CHECK_TIME] = 0L
+
+            // ── 过渡动画设置 ──
+            prefs[Keys.SPLASH_ANIMATION_ENABLED] = true
         }
     }
 }

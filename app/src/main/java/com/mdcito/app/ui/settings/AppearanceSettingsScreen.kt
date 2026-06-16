@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Animation
 import androidx.compose.material.icons.outlined.Brush
 import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.Image
@@ -26,6 +27,7 @@ fun AppearanceSettingsScreen(
     onNavigateToFont: () -> Unit,
     onNavigateToBackground: () -> Unit,
     onNavigateToCardStyle: () -> Unit,
+    onNavigateToTransition: () -> Unit,
 ) {
     LanguageHelper.LocalLocaleVersion.current
     Column(
@@ -66,6 +68,13 @@ fun AppearanceSettingsScreen(
             label = stringResource(R.string.card_nav_style),
             subtitle = stringResource(R.string.card_nav_style_subtitle),
             onClick = onNavigateToCardStyle,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        SettingsNavigationItem(
+            icon = Icons.Outlined.Animation,
+            label = stringResource(R.string.transition_settings),
+            subtitle = stringResource(R.string.transition_settings_subtitle),
+            onClick = onNavigateToTransition,
         )
 
         Spacer(modifier = Modifier.height(40.dp))

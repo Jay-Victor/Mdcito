@@ -106,6 +106,8 @@
     <string name="background_settings_subtitle">Background image, blur, brightness</string>
     <string name="card_nav_style">Card &amp; Navigation Style</string>
     <string name="card_nav_style_subtitle">Card style, transparency, button style</string>
+    <string name="transition_settings">Transition Settings</string>
+    <string name="transition_settings_subtitle">Splash animation, page transition effects</string>
 
     <!-- Theme Settings -->
     <string name="theme_mode">Theme Mode</string>
@@ -174,6 +176,11 @@
     <string name="status_bar_preview">Status Bar Preview</string>
     <string name="transparency_level">Transparency</string>
     <string name="liquid_glass_transparency">Liquid Glass Transparency</string>
+
+    <!-- Transition Settings -->
+    <string name="animation_group">Animation Settings</string>
+    <string name="splash_animation_title">Splash Animation</string>
+    <string name="splash_animation_desc">Show brand logo animation when app starts</string>
 
     <!-- Background Settings -->
     <string name="background_image">Background Image</string>

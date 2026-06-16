@@ -390,6 +390,9 @@ class SettingsViewModel @Inject constructor(
     val navBarColor: StateFlow<Int> = settingsRepository.navBarColor
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), -1)
 
+    val splashAnimationEnabled: StateFlow<Boolean> = settingsRepository.splashAnimationEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     fun setThemeMode(mode: String) {
         viewModelScope.launch {
             settingsRepository.setThemeMode(mode)
@@ -777,6 +780,11 @@ class SettingsViewModel @Inject constructor(
 
     fun setNavBarColor(color: Int) {
         viewModelScope.launch { settingsRepository.setNavBarColor(color) }
+    }
+
+    fun setSplashAnimationEnabled(enabled: Boolean) {
+        Timber.tag("Settings").d("开场动画：${if (enabled) "开启" else "关闭"}")
+        viewModelScope.launch { settingsRepository.setSplashAnimationEnabled(enabled) }
     }
 
     fun setWorkspacePath(path: String) {

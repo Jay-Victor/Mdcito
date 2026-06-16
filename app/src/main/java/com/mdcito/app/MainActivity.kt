@@ -88,7 +88,24 @@ class MainActivity : AppCompatActivity() {
             val uiFontFamily = remember(uiFont) { fontService.getComposeFontFamily(uiFont) }
 
             // 开场动画状态：首次启动时显示，Activity 重建（如语言切换）时跳过
-            var showSplash by remember { mutableStateOf(!isRecreating) }
+            // 使用 null 表示"等待设置加载"，加载完成后根据设置决定是否显示
+            var showSplash by remember { mutableStateOf<Boolean?>(if (isRecreating) false else null) }
+
+            // 追踪是否已收到 DataStore 的真实值（而非 collectAsState 的初始值）
+            var splashSettingLoaded by remember { mutableStateOf(false) }
+
+            // 当 splashAnimationEnabled 从 DataStore 加载完成后，决定是否显示开场动画
+            // 使用 snapshotFlow 确保只在真实值到达时触发，避免 collectAsState 初始值干扰
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                settingsRepository.splashAnimationEnabled.collect { enabled ->
+                    if (!splashSettingLoaded) {
+                        splashSettingLoaded = true
+                        if (showSplash == null) {
+                            showSplash = enabled
+                        }
+                    }
+                }
+            }
 
             // 检测系统级「减少动画」无障碍设置
             val context = LocalContext.current
@@ -115,55 +132,62 @@ class MainActivity : AppCompatActivity() {
                 // 通过 CompositionLocal 向下传播语言版本号，
                 // 任何读取 LocalLocaleVersion.current 的 Composable 都会在语言切换时被强制重组
                 CompositionLocalProvider(LanguageHelper.LocalLocaleVersion provides localeVersion.intValue) {
-                    if (showSplash) {
-                        val darkTheme = when (currentThemeMode) {
-                            ThemeMode.SYSTEM -> isSystemInDarkTheme()
-                            ThemeMode.LIGHT -> false
-                            ThemeMode.DARK -> true
-                        }
-                        SplashAnimation(
-                            isDarkTheme = darkTheme,
-                            reduceMotion = reduceMotion,
-                            onAnimationFinish = { showSplash = false },
-                        )
-                    } else {
-                        // 使用 Compose state 跟踪权限状态，在生命周期变化时自动更新
-                        var hasPermission by remember { mutableStateOf(hasAllFilesAccess(this@MainActivity)) }
-                        val lifecycleOwner = LocalLifecycleOwner.current
-                        DisposableEffect(lifecycleOwner) {
-                            val observer = LifecycleEventObserver { _, event ->
-                                if (event == Lifecycle.Event.ON_RESUME) {
-                                    hasPermission = hasAllFilesAccess(this@MainActivity)
-                                }
+                    when (showSplash) {
+                        true -> {
+                            val darkTheme = when (currentThemeMode) {
+                                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                                ThemeMode.LIGHT -> false
+                                ThemeMode.DARK -> true
                             }
-                            lifecycleOwner.lifecycle.addObserver(observer)
-                            onDispose {
-                                lifecycleOwner.lifecycle.removeObserver(observer)
-                            }
-                        }
-
-                        // 未完成引导 或 权限未授予时，显示引导页
-                        if (!onboardingCompleted || !hasPermission) {
-                            val scope = rememberCoroutineScope()
-                            OnboardingScreen(
-                                onComplete = {
-                                    scope.launch {
-                                        settingsRepository.setOnboardingCompleted(true)
-                                    }
-                                },
-                                startAtPermissionPage = onboardingCompleted && !hasPermission,
+                            SplashAnimation(
+                                isDarkTheme = darkTheme,
+                                reduceMotion = reduceMotion,
+                                onAnimationFinish = { showSplash = false },
                             )
-                        } else {
-                            val navController = rememberNavController()
-                            MdcitoScaffold(navController = navController) {
-                                MdcitoNavGraph(navController = navController)
-                            }
-                            androidx.compose.runtime.LaunchedEffect(pendingDeepLink) {
-                                pendingDeepLink?.let { route ->
-                                    navController.navigate(route)
-                                    pendingDeepLink = null
+                        }
+                        false -> {
+                            // 使用 Compose state 跟踪权限状态，在生命周期变化时自动更新
+                            var hasPermission by remember { mutableStateOf(hasAllFilesAccess(this@MainActivity)) }
+                            val lifecycleOwner = LocalLifecycleOwner.current
+                            DisposableEffect(lifecycleOwner) {
+                                val observer = LifecycleEventObserver { _, event ->
+                                    if (event == Lifecycle.Event.ON_RESUME) {
+                                        hasPermission = hasAllFilesAccess(this@MainActivity)
+                                    }
+                                }
+                                lifecycleOwner.lifecycle.addObserver(observer)
+                                onDispose {
+                                    lifecycleOwner.lifecycle.removeObserver(observer)
                                 }
                             }
+
+                            // 未完成引导 或 权限未授予时，显示引导页
+                            if (!onboardingCompleted || !hasPermission) {
+                                val scope = rememberCoroutineScope()
+                                OnboardingScreen(
+                                    onComplete = {
+                                        scope.launch {
+                                            settingsRepository.setOnboardingCompleted(true)
+                                        }
+                                    },
+                                    startAtPermissionPage = onboardingCompleted && !hasPermission,
+                                )
+                            } else {
+                                val navController = rememberNavController()
+                                MdcitoScaffold(navController = navController) {
+                                    MdcitoNavGraph(navController = navController)
+                                }
+                                androidx.compose.runtime.LaunchedEffect(pendingDeepLink) {
+                                    pendingDeepLink?.let { route ->
+                                        navController.navigate(route)
+                                        pendingDeepLink = null
+                                    }
+                                }
+                            }
+                        }
+                        null -> {
+                            // 等待设置加载完成，显示空白或加载状态
+                            // 实际上 LaunchedEffect 会很快执行，用户几乎看不到这个状态
                         }
                     }
                 }

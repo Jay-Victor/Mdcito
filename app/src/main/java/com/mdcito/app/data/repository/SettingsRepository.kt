@@ -284,6 +284,9 @@ class SettingsRepository @Inject constructor(
     val updateSource: Flow<String> = settingsDataStore.updateSource
     val lastUpdateCheckTime: Flow<Long> = settingsDataStore.lastUpdateCheckTime
 
+    // ── 过渡动画设置 ──
+    val splashAnimationEnabled: Flow<Boolean> = settingsDataStore.splashAnimationEnabled
+
     // ── 云同步敏感凭据（加密存储） ──
     private val _cloudSyncPassword = MutableStateFlow(secureSettingsDataStore.getCloudSyncPassword())
     val cloudSyncPassword: StateFlow<String> = _cloudSyncPassword.asStateFlow()
@@ -323,6 +326,9 @@ class SettingsRepository @Inject constructor(
     suspend fun setAutoCheckUpdate(enabled: Boolean) = settingsDataStore.setAutoCheckUpdate(enabled)
     suspend fun setUpdateSource(source: String) = settingsDataStore.setUpdateSource(source)
     suspend fun setLastUpdateCheckTime(time: Long) = settingsDataStore.setLastUpdateCheckTime(time)
+
+    // ── 过渡动画设置 setter ──
+    suspend fun setSplashAnimationEnabled(enabled: Boolean) = settingsDataStore.setSplashAnimationEnabled(enabled)
 
     // ── 云同步敏感凭据 setter（加密存储） ──
     fun setCloudSyncPassword(password: String) {

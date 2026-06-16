@@ -35,6 +35,7 @@ import com.mdcito.app.ui.settings.OpenSourceScreen
 import com.mdcito.app.ui.settings.PerformanceSettingsScreen
 import com.mdcito.app.ui.settings.StorageSettingsScreen
 import com.mdcito.app.ui.settings.ThemeSettingsScreen
+import com.mdcito.app.ui.settings.TransitionSettingsScreen
 import com.mdcito.app.ui.settings.changelog.ChangelogScreen
 import com.mdcito.app.ui.settings.cloudsync.CloudSyncSettingsScreen
 import timber.log.Timber
@@ -51,6 +52,7 @@ private val settingsRouteSet = setOf(
     Route.FontSettings.route,
     Route.BackgroundSettings.route,
     Route.CardStyleSettings.route,
+    Route.TransitionSettings.route,
     Route.EditorSettings.route,
     Route.StorageSettings.route,
     Route.CloudSyncSettings.route,
@@ -228,6 +230,10 @@ fun MdcitoNavGraph(
                     Timber.tag("Navigation").d("导航到卡片样式设置")
                     navController.navigate(Route.CardStyleSettings.route)
                 },
+                onNavigateToTransition = {
+                    Timber.tag("Navigation").d("导航到过渡动画设置")
+                    navController.navigate(Route.TransitionSettings.route)
+                },
             )
         }
 
@@ -245,6 +251,10 @@ fun MdcitoNavGraph(
 
         composable(Route.CardStyleSettings.route) {
             CardStyleSettingsScreen(onNavigateBack = navigateBack)
+        }
+
+        composable(Route.TransitionSettings.route) {
+            TransitionSettingsScreen(onNavigateBack = navigateBack)
         }
 
         composable(Route.EditorSettings.route) {

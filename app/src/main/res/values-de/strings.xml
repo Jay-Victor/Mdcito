@@ -106,6 +106,8 @@
     <string name="background_settings_subtitle">Hintergrundbild, Unschärfe, Helligkeit</string>
     <string name="card_nav_style">Karten- und Navigationsstil</string>
     <string name="card_nav_style_subtitle">Kartenstil, Transparenz, Schaltflächenstil</string>
+    <string name="transition_settings">Übergangsanimationen</string>
+    <string name="transition_settings_subtitle">Startanimation, Seitenübergänge</string>
 
     <!-- Theme Settings -->
     <string name="theme_mode">Designmodus</string>
@@ -174,6 +176,11 @@
     <string name="status_bar_preview">Statusleisten-Vorschau</string>
     <string name="transparency_level">Transparenz</string>
     <string name="liquid_glass_transparency">Flüssigglas-Transparenz</string>
+
+    <!-- Transition Settings -->
+    <string name="animation_group">Animationseinstellungen</string>
+    <string name="splash_animation_title">Startanimation</string>
+    <string name="splash_animation_desc">Brand-Logo-Animation beim App-Start anzeigen</string>
 
     <!-- Background Settings -->
     <string name="background_image">Hintergrundbild</string>

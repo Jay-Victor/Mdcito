@@ -106,6 +106,8 @@
     <string name="background_settings_subtitle">배경 이미지, 흐림, 밝기</string>
     <string name="card_nav_style">카드 및 내비게이션 스타일</string>
     <string name="card_nav_style_subtitle">카드 스타일, 투명도, 버튼 스타일</string>
+    <string name="transition_settings">전환 설정</string>
+    <string name="transition_settings_subtitle">스플래시 애니메이션, 페이지 전환 효과</string>
 
     <!-- Theme Settings -->
     <string name="theme_mode">테마 모드</string>
@@ -174,6 +176,11 @@
     <string name="status_bar_preview">상태 표시줄 미리보기</string>
     <string name="transparency_level">투명도</string>
     <string name="liquid_glass_transparency">리퀴드 글래스 투명도</string>
+
+    <!-- Transition Settings -->
+    <string name="animation_group">애니메이션 설정</string>
+    <string name="splash_animation_title">스플래시 애니메이션</string>
+    <string name="splash_animation_desc">앱 시작 시 브랜드 로고 애니메이션 표시</string>
 
     <!-- Background Settings -->
     <string name="background_image">배경 이미지</string>

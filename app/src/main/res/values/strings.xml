@@ -107,6 +107,8 @@
     <string name="background_settings_subtitle">背景图片、模糊、亮度</string>
     <string name="card_nav_style">卡片与导航栏风格</string>
     <string name="card_nav_style_subtitle">卡片样式、透明度、按钮风格</string>
+    <string name="transition_settings">过渡动画设置</string>
+    <string name="transition_settings_subtitle">开场动画、页面过渡效果</string>
 
     <!-- Theme Settings -->
     <string name="theme_mode">主题模式</string>
@@ -178,6 +180,11 @@
     <string name="status_bar_preview">状态栏预览</string>
     <string name="transparency_level">透明度</string>
     <string name="liquid_glass_transparency">液态玻璃透明度</string>
+
+    <!-- Transition Settings -->
+    <string name="animation_group">动画设置</string>
+    <string name="splash_animation_title">开场动画</string>
+    <string name="splash_animation_desc">应用启动时显示品牌 Logo 动画</string>
 
     <!-- Background Settings -->
     <string name="background_image">背景图片</string>

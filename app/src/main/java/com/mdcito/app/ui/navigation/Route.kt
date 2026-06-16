@@ -30,6 +30,8 @@ sealed class Route(val route: String) {
 
     data object CardStyleSettings : Route("settings/appearance/card_style")
 
+    data object TransitionSettings : Route("settings/appearance/transition")
+
     data object EditorSettings : Route("settings/editor")
 
     data object StorageSettings : Route("settings/storage")
