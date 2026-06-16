@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -18,9 +19,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.mdcito.app.data.font.FontService
@@ -32,6 +35,8 @@ import com.mdcito.app.ui.components.SplashAnimation
 import com.mdcito.app.ui.navigation.MdcitoNavGraph
 import com.mdcito.app.ui.onboarding.OnboardingScreen
 import com.mdcito.app.ui.onboarding.hasAllFilesAccess
+import com.mdcito.app.ui.settings.update.UpdateDialog
+import com.mdcito.app.ui.settings.update.UpdateViewModel
 import com.mdcito.app.ui.theme.MdcitoTheme
 import com.mdcito.app.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
@@ -173,6 +178,35 @@ class MainActivity : AppCompatActivity() {
                                     startAtPermissionPage = onboardingCompleted && !hasPermission,
                                 )
                             } else {
+                                // ── 更新检查相关状态 ──
+                                val updateViewModel: UpdateViewModel = hiltViewModel()
+                                val checkState by updateViewModel.checkState.collectAsStateWithLifecycle()
+                                val downloadState by updateViewModel.downloadState.collectAsStateWithLifecycle()
+                                val updateSource by updateViewModel.updateSource.collectAsStateWithLifecycle()
+                                var showUpdateDialog by remember { mutableStateOf(false) }
+
+                                // 应用启动时自动检查更新
+                                LaunchedEffect(Unit) {
+                                    updateViewModel.autoCheckIfEnabled()
+                                }
+
+                                // 自动检查发现新版本时弹出更新对话框
+                                LaunchedEffect(checkState) {
+                                    if (updateViewModel.shouldAutoShowDialog()) {
+                                        showUpdateDialog = true
+                                        updateViewModel.markAutoDialogShown()
+                                    }
+                                }
+
+                                // 监听安装权限事件
+                                LaunchedEffect(Unit) {
+                                    updateViewModel.updateEvent.collect { event ->
+                                        if (event is UpdateViewModel.UpdateEvent.InstallPermissionRequired && !event.hasPermission) {
+                                            updateViewModel.openInstallPermissionSettings()
+                                        }
+                                    }
+                                }
+
                                 val navController = rememberNavController()
                                 MdcitoScaffold(navController = navController) {
                                     MdcitoNavGraph(navController = navController)
@@ -181,6 +215,45 @@ class MainActivity : AppCompatActivity() {
                                     pendingDeepLink?.let { route ->
                                         navController.navigate(route)
                                         pendingDeepLink = null
+                                    }
+                                }
+
+                                // ── 自动更新弹窗 ──
+                                if (showUpdateDialog) {
+                                    androidx.compose.ui.window.Dialog(
+                                        onDismissRequest = {
+                                            showUpdateDialog = false
+                                            if (checkState !is UpdateViewModel.CheckState.Available) {
+                                                updateViewModel.resetCheckState()
+                                            }
+                                        },
+                                        properties = androidx.compose.ui.window.DialogProperties(
+                                            usePlatformDefaultWidth = false,
+                                        ),
+                                    ) {
+                                        UpdateDialog(
+                                            checkState = checkState,
+                                            downloadState = downloadState,
+                                            updateSource = updateSource,
+                                            onCheckUpdate = { source -> updateViewModel.checkForUpdate(source) },
+                                            onStartDownload = { mirrorUrl -> updateViewModel.startDownload(mirrorUrl) },
+                                            onPauseDownload = { updateViewModel.pauseDownload() },
+                                            onResumeDownload = { updateViewModel.resumeDownload() },
+                                            onCancelDownload = { updateViewModel.cancelDownload() },
+                                            onInstallApk = { filePath -> updateViewModel.installApk(filePath) },
+                                            onOpenInstallPermission = { updateViewModel.openInstallPermissionSettings() },
+                                            onDismiss = {
+                                                showUpdateDialog = false
+                                                if (checkState !is UpdateViewModel.CheckState.Available) {
+                                                    updateViewModel.resetCheckState()
+                                                }
+                                            },
+                                            onSetUpdateSource = { source -> updateViewModel.setUpdateSource(source) },
+                                            onResetCheckState = {
+                                                updateViewModel.resetCheckState()
+                                                showUpdateDialog = false
+                                            },
+                                        )
                                     }
                                 }
                             }

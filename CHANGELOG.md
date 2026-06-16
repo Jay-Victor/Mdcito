@@ -7,6 +7,18 @@
 
 ---
 
+## [1.0.5] - 2026-06-16
+
+### Fixed
+
+#### OTA 更新
+- 修复应用启动时不会自动检查更新的问题：此前自动检查更新逻辑仅在用户导航到"关于"页面时触发，而非应用启动时触发
+- 将 `UpdateViewModel` 的自动检查更新逻辑从 `AboutScreen` 移至 `MainActivity`，确保应用启动后（完成引导且授予权限时）自动检查
+- `AboutScreen` 改为共享 Activity 级别的 `UpdateViewModel` 实例，避免重复创建和重复检查
+- 自动检查发现新版本时直接在主界面弹出更新对话框，无需用户手动进入"关于"页面
+
+---
+
 ## [1.0.4] - 2026-06-16
 
 ### Fixed
@@ -143,6 +155,7 @@
 
 ---
 
+[1.0.5]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.5
 [1.0.4]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.4
 [1.0.3]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.3
 [1.0.2]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.2

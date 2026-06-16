@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -55,7 +56,7 @@ fun AboutScreen(
     onNavigateBack: () -> Unit,
     onNavigateToOpenSource: () -> Unit = {},
     onNavigateToChangelog: () -> Unit = {},
-    updateViewModel: UpdateViewModel = hiltViewModel(),
+    updateViewModel: UpdateViewModel = hiltViewModel(viewModelStoreOwner = LocalContext.current as androidx.activity.ComponentActivity),
 ) {
     LanguageHelper.LocalLocaleVersion.current
     val uriHandler = LocalUriHandler.current
@@ -65,19 +66,6 @@ fun AboutScreen(
     val downloadState by updateViewModel.downloadState.collectAsStateWithLifecycle()
     val autoCheckUpdate by updateViewModel.autoCheckUpdate.collectAsStateWithLifecycle()
     val updateSource by updateViewModel.updateSource.collectAsStateWithLifecycle()
-
-    // 启动时静默自动检查
-    LaunchedEffect(Unit) {
-        updateViewModel.autoCheckIfEnabled()
-    }
-
-    // 监听自动检查结果，发现新版本时自动弹出对话框（仅首次）
-    LaunchedEffect(checkState) {
-        if (updateViewModel.shouldAutoShowDialog()) {
-            showUpdateDialog = true
-            updateViewModel.markAutoDialogShown()
-        }
-    }
 
     // 监听安装权限事件
     LaunchedEffect(Unit) {
@@ -350,9 +338,11 @@ fun AboutScreen(
                 usePlatformDefaultWidth = false,
             ),
         ) {
-            // 弹窗打开后自动触发检查，确保先显示"检查中"状态
+            // 仅在 Idle 状态时触发检查（避免自动检查已有结果时重复检查）
             LaunchedEffect(Unit) {
-                updateViewModel.checkForUpdate(null)
+                if (updateViewModel.checkState.value is UpdateViewModel.CheckState.Idle) {
+                    updateViewModel.checkForUpdate(null)
+                }
             }
             UpdateDialog(
                 checkState = checkState,
