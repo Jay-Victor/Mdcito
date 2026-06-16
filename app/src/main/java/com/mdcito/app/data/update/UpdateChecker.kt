@@ -87,9 +87,23 @@ class UpdateChecker @Inject constructor(
             it.name.endsWith(".apk", ignoreCase = true)
         } ?: return null
 
-        // 生成镜像 URL
-        val mirrorUrls = GITHUB_MIRRORS.map { mirror ->
-            MirrorUrl(mirror.name, mirror.url + apkAsset.browserDownloadUrl)
+        // URL 验证：确保包含有效的 HTTP/HTTPS 协议前缀
+        val downloadUrl = apkAsset.browserDownloadUrl
+        if (!downloadUrl.startsWith("http://") && !downloadUrl.startsWith("https://")) {
+            Timber.tag("UpdateChecker").w("GitHub 下载 URL 格式无效: $downloadUrl")
+            return null
+        }
+
+        // 生成镜像 URL（确保每个镜像 URL 都有完整的协议前缀）
+        val mirrorUrls = GITHUB_MIRRORS.mapNotNull { mirror ->
+            val mirrorFullUrl = mirror.url + downloadUrl
+            // 验证镜像 URL 格式
+            if (mirrorFullUrl.startsWith("http://") || mirrorFullUrl.startsWith("https://")) {
+                MirrorUrl(mirror.name, mirrorFullUrl)
+            } else {
+                Timber.tag("UpdateChecker").w("镜像 URL 格式无效: ${mirror.name} - $mirrorFullUrl")
+                null
+            }
         }
 
         return UpdateInfo(
@@ -97,7 +111,7 @@ class UpdateChecker @Inject constructor(
             versionCode = parseVersionCode(remoteVersion),
             releaseNotes = release.body,
             publishedAt = release.publishedAt,
-            downloadUrl = apkAsset.browserDownloadUrl,
+            downloadUrl = downloadUrl,
             downloadSize = apkAsset.size,
             fileName = apkAsset.name,
             source = UpdateSource.GITHUB,
@@ -130,12 +144,25 @@ class UpdateChecker @Inject constructor(
             it.name.endsWith(".apk", ignoreCase = true)
         } ?: return null
 
+        // 使用 browser_download_url 作为下载链接（这是直接的下载 URL）
+        // 如果 browser_download_url 为空，则构造标准的下载 URL
+        val downloadUrl = apkAsset.browserDownloadUrl.ifBlank {
+            // 构造标准 Gitee 下载链接: https://gitee.com/{owner}/{repo}/releases/download/{tag}/{filename}
+            "https://gitee.com/$GITEE_OWNER/$GITEE_REPO/releases/download/${release.tagName}/${apkAsset.name}"
+        }
+
+        // URL 验证：确保包含有效的 HTTP/HTTPS 协议前缀
+        if (!downloadUrl.startsWith("http://") && !downloadUrl.startsWith("https://")) {
+            Timber.tag("UpdateChecker").w("Gitee 下载 URL 格式无效: $downloadUrl")
+            return null
+        }
+
         return UpdateInfo(
             versionName = remoteVersion,
             versionCode = parseVersionCode(remoteVersion),
             releaseNotes = release.body,
             publishedAt = release.publishedAt.ifBlank { release.createdAt },
-            downloadUrl = apkAsset.url,
+            downloadUrl = downloadUrl,
             downloadSize = apkAsset.size,
             fileName = apkAsset.name,
             source = UpdateSource.GITEE,

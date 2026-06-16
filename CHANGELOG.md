@@ -7,6 +7,18 @@
 
 ---
 
+## [1.0.2] - 2026-06-16
+
+### Fixed
+
+#### OTA 更新
+- 修复 Gitee 下载 URL 使用错误的 API URL 字段问题，改为使用 `browser_download_url` 作为直接下载链接
+- 修复 URL 缺少 HTTP/HTTPS 协议前缀导致的下载失败问题（"Expected URL scheme 'http' or 'https' but no scheme was found for"）
+- 添加三层 URL 验证机制：UpdateChecker 检查更新时验证、镜像 URL 生成时验证、ApkDownloader 发起下载前验证
+- Gitee 下载 URL 回退构造：当 `browser_download_url` 为空时，自动构造标准下载链接格式
+
+---
+
 ## [1.0.1] - 2026-06-16
 
 ### Changed
@@ -109,5 +121,6 @@
 
 ---
 
+[1.0.2]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.0

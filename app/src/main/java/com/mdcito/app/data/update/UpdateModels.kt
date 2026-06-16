@@ -50,7 +50,8 @@ data class GiteeRelease(
 data class GiteeAsset(
     @SerializedName("name") val name: String = "",
     @SerializedName("size") val size: Long = 0,
-    @SerializedName("url") val url: String = ""
+    @SerializedName("url") val url: String = "",
+    @SerializedName("browser_download_url") val browserDownloadUrl: String = ""
 )
 
 /**

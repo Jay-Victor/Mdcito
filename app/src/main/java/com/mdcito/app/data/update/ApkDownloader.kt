@@ -78,6 +78,13 @@ class ApkDownloader @Inject constructor(
     ): String? = withContext(Dispatchers.IO) {
         isCancelled = false
 
+        // URL 验证：确保包含有效的 HTTP/HTTPS 协议前缀
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            Timber.tag("ApkDownloader").e("下载 URL 格式无效，缺少 HTTP/HTTPS 协议前缀: $url")
+            _downloadState.value = DownloadState.Error("URL 格式无效：缺少协议前缀")
+            return@withContext null
+        }
+
         val downloadDir = File(
             context.externalCacheDir ?: context.cacheDir,
             "updates"
