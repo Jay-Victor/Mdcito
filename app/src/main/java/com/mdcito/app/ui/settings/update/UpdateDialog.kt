@@ -185,8 +185,19 @@ private fun UpdateAvailableContent(
     onCheckUpdate: (UpdateSource?) -> Unit,
     uriHandler: androidx.compose.ui.platform.UriHandler,
 ) {
-    // 选择当前展示的更新信息（优先 Gitee，其次 GitHub）
-    var selectedPlatform by remember { mutableStateOf(UpdateSource.GITEE) }
+    // 版本不一致时默认选中版本号更高的平台
+    val hasVersionMismatch = result.gitee != null && result.github != null &&
+            result.gitee.versionName != result.github.versionName
+    var selectedPlatform by remember {
+        mutableStateOf(
+            if (result.gitee != null && result.github != null) {
+                // 优先选择版本号更高的平台
+                if (result.gitee.versionCode >= result.github.versionCode) UpdateSource.GITEE
+                else UpdateSource.GITHUB
+            } else if (result.gitee != null) UpdateSource.GITEE
+            else UpdateSource.GITHUB
+        )
+    }
     val updateInfo: UpdateInfo? = when (selectedPlatform) {
         UpdateSource.GITEE -> result.gitee
         UpdateSource.GITHUB -> result.github
@@ -219,6 +230,22 @@ private fun UpdateAvailableContent(
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+
+    // 版本不一致提示
+    if (hasVersionMismatch) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.errorContainer,
+        ) {
+            Text(
+                text = stringResource(R.string.update_version_mismatch_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
             )
         }
     }

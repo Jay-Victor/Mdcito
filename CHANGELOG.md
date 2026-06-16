@@ -7,6 +7,18 @@
 
 ---
 
+## [1.0.6] - 2026-06-16
+
+### Fixed
+
+#### OTA 更新
+- 替换已失效的 GitHub 镜像加速节点 `ghproxy.com` 为 `ghfast.top`（实测 2.4 MB/s），替换 `gh.api.99988866.xyz` 为 `ghproxy.cc`（2026 年社区验证可用）
+- 修复双源（GitHub + Gitee）版本不一致时盲目优先 Gitee 导致用户可能下载到旧版本的问题：改为优先选择版本号更高的源，版本相同时仍优先 Gitee（国内速度快）
+- 更新对话框默认选中平台改为根据版本号高低决定，而非固定选中 Gitee
+- 新增双平台版本不一致提示：当 Gitee 和 GitHub 最新版本号不同时，显示醒目提示条告知用户已默认选中更高版本，可手动切换
+
+---
+
 ## [1.0.5] - 2026-06-16
 
 ### Fixed
@@ -155,6 +167,7 @@
 
 ---
 
+[1.0.6]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.6
 [1.0.5]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.5
 [1.0.4]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.4
 [1.0.3]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.3

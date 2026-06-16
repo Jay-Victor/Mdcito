@@ -1102,4 +1102,5 @@
     <string name="update_section_title">Updates</string>
     <string name="update_check_subtitle">Jetzt prüfen, ob eine neue Version verfügbar ist</string>
     <string name="update_platform_no_result">Kein Update auf dieser Plattform verfügbar</string>
+    <string name="update_version_mismatch_hint">Die Versionen unterscheiden sich zwischen den Plattformen. Die höhere Version ist standardmäßig ausgewählt. Sie können die Plattform wechseln.</string>
 </resources>

@@ -1099,4 +1099,5 @@
     <string name="update_section_title">アップデート</string>
     <string name="update_check_subtitle">新しいバージョンがあるか確認します</string>
     <string name="update_platform_no_result">このプラットフォームではまだリリースされていません</string>
+    <string name="update_version_mismatch_hint">プラットフォーム間でバージョンが異なります。より高いバージョンがデフォルトで選択されています。切り替えて確認できます。</string>
 </resources>

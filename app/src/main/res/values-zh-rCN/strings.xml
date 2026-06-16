@@ -1097,4 +1097,5 @@
     <string name="update_section_title">更新</string>
     <string name="update_check_subtitle">立即检查是否有新版本可用</string>
     <string name="update_platform_no_result">该平台暂未发布更新版本</string>
+    <string name="update_version_mismatch_hint">两个平台版本不一致，已默认选中更高版本，可切换平台查看</string>
 </resources>

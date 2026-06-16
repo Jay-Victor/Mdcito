@@ -68,12 +68,19 @@ class UpdateViewModel @Inject constructor(
     private var currentResult: DualCheckResult? = null
     private var wasAutoCheck = false  // 标记是否来自自动检查
 
-    /** 获取当前选中的更新信息，优先 Gitee，其次 GitHub */
+    /** 获取当前选中的更新信息，优先版本号最高的源 */
     val selectedUpdateInfo: UpdateInfo?
         get() {
             val r = currentResult ?: return null
-            // 双平台都有更新时优先 Gitee（国内速度快）
-            return r.gitee ?: r.github
+            // 双平台都有更新时，优先选择版本号更高的；版本相同时优先 Gitee（国内速度快）
+            return when {
+                r.gitee != null && r.github != null -> {
+                    if (r.gitee.versionCode >= r.github.versionCode) r.gitee else r.github
+                }
+                r.gitee != null -> r.gitee
+                r.github != null -> r.github
+                else -> null
+            }
         }
 
     /**

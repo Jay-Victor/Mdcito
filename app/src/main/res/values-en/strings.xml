@@ -1100,4 +1100,5 @@
     <string name="update_section_title">Updates</string>
     <string name="update_check_subtitle">Check if a new version is available now</string>
     <string name="update_platform_no_result">No update available on this platform</string>
+    <string name="update_version_mismatch_hint">Versions differ across platforms. The higher version is selected by default. You can switch platforms.</string>
 </resources>

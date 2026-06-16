@@ -31,9 +31,9 @@ class UpdateChecker @Inject constructor(
 
         // GitHub 镜像加速地址
         private val GITHUB_MIRRORS = listOf(
-            MirrorUrl("ghproxy.com", "https://ghproxy.com/"),
+            MirrorUrl("ghfast.top", "https://ghfast.top/"),
             MirrorUrl("ghp.ci", "https://ghp.ci/"),
-            MirrorUrl("gh.api.99988866.xyz", "https://gh.api.99988866.xyz/")
+            MirrorUrl("ghproxy.cc", "https://ghproxy.cc/")
         )
     }
 
