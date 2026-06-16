@@ -16,6 +16,7 @@ import com.mdcito.app.data.update.UpdateInfo
 import com.mdcito.app.data.update.UpdateSource
 import com.mdcito.app.data.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -67,6 +68,7 @@ class UpdateViewModel @Inject constructor(
 
     private var currentResult: DualCheckResult? = null
     private var wasAutoCheck = false  // 标记是否来自自动检查
+    private var hasRetried = false    // 标记自动检查是否已重试过
 
     /** 获取当前选中的更新信息，优先版本号最高的源 */
     val selectedUpdateInfo: UpdateInfo?
@@ -96,10 +98,12 @@ class UpdateViewModel @Inject constructor(
                 val currentVersion = BuildConfig.VERSION_NAME
                 val result = if (source != null) {
                     // 用户显式选择了单个平台
-                    val info = updateChecker.checkFromSource(source, currentVersion)
+                    val checkResult = updateChecker.checkFromSource(source, currentVersion)
                     DualCheckResult(
-                        gitee = if (source == UpdateSource.GITEE) info else null,
-                        github = if (source == UpdateSource.GITHUB) info else null
+                        gitee = if (source == UpdateSource.GITEE) checkResult.updateInfo else null,
+                        github = if (source == UpdateSource.GITHUB) checkResult.updateInfo else null,
+                        giteeContacted = source == UpdateSource.GITEE && checkResult.contacted,
+                        githubContacted = source == UpdateSource.GITHUB && checkResult.contacted
                     )
                 } else {
                     // 默认：并行检查两个平台
@@ -115,7 +119,10 @@ class UpdateViewModel @Inject constructor(
                     Timber.tag("Update").i("当前已是最新版本")
                 }
 
-                settingsRepository.setLastUpdateCheckTime(System.currentTimeMillis())
+                // 仅在至少一个平台成功联系时更新检查时间，避免网络失败时阻塞下次检查
+                if (result.anyContacted) {
+                    settingsRepository.setLastUpdateCheckTime(System.currentTimeMillis())
+                }
             } catch (e: Exception) {
                 _checkState.value = CheckState.Error(e.message ?: "检查更新失败")
                 Timber.tag("Update").e(e, "检查更新失败")
@@ -125,6 +132,12 @@ class UpdateViewModel @Inject constructor(
 
     /**
      * 应用启动时自动检查更新（静默模式，并行查询双平台）
+     *
+     * 改进点：
+     * 1. 节流时间从 8 小时缩短为 1 小时，避免新版本发布后长时间不提示
+     * 2. 仅在至少一个平台成功联系时更新检查时间，网络失败时不阻塞下次检查
+     * 3. 两个平台均联系失败时自动重试一次（延迟 30 秒），应对启动时网络未就绪
+     * 4. 未发现新版本时重置 wasAutoCheck，避免状态残留
      */
     fun autoCheckIfEnabled() {
         viewModelScope.launch {
@@ -132,40 +145,118 @@ class UpdateViewModel @Inject constructor(
             if (!autoCheck) return@launch
 
             val lastCheckTime = settingsRepository.lastUpdateCheckTime.first()
-            val eightHours = 8 * 60 * 60 * 1000L
-            if (System.currentTimeMillis() - lastCheckTime < eightHours) {
-                Timber.tag("Update").d("距上次检查不足 8 小时，跳过自动检查")
+            val oneHour = 60 * 60 * 1000L
+            if (System.currentTimeMillis() - lastCheckTime < oneHour) {
+                Timber.tag("Update").d("距上次检查不足 1 小时，跳过自动检查")
                 return@launch
             }
 
-            try {
-                wasAutoCheck = true  // 标记为自动检查
-                val result = updateChecker.checkAllSources(BuildConfig.VERSION_NAME)
-                if (result.gitee != null || result.github != null) {
-                    currentResult = result
-                    _checkState.value = CheckState.Available(result)
-                    Timber.tag("Update").i("自动检查发现新版本 - Gitee:${result.gitee?.versionName} GitHub:${result.github?.versionName}")
-                }
-                settingsRepository.setLastUpdateCheckTime(System.currentTimeMillis())
-            } catch (e: Exception) {
-                Timber.tag("Update").w(e, "自动检查更新失败（静默）")
+            performAutoCheck(isRetry = false)
+        }
+    }
+
+    /**
+     * 执行自动检查的核心逻辑
+     * @param isRetry 是否为重试（重试时不检查节流时间）
+     */
+    private suspend fun performAutoCheck(isRetry: Boolean) {
+        try {
+            wasAutoCheck = true
+            val result = updateChecker.checkAllSources(BuildConfig.VERSION_NAME)
+
+            if (result.gitee != null || result.github != null) {
+                currentResult = result
+                _checkState.value = CheckState.Available(result)
+                Timber.tag("Update").i("自动检查发现新版本 - Gitee:${result.gitee?.versionName} GitHub:${result.github?.versionName}")
+            } else {
+                // 未发现新版本，重置标记
+                wasAutoCheck = false
             }
+
+            // 仅在至少一个平台成功联系时更新检查时间
+            if (result.anyContacted) {
+                settingsRepository.setLastUpdateCheckTime(System.currentTimeMillis())
+            } else if (!isRetry && !hasRetried) {
+                // 两个平台均未联系成功，且尚未重试过 → 延迟重试
+                hasRetried = true
+                Timber.tag("Update").w("自动检查更新失败：两个平台均未响应，30 秒后重试")
+                delay(30_000)
+                // 重试前检查是否已有结果（避免用户手动检查后重复弹窗）
+                if (_checkState.value !is CheckState.Available) {
+                    performAutoCheck(isRetry = true)
+                }
+            } else if (isRetry) {
+                // 重试仍失败，记录日志但不阻塞下次启动检查
+                Timber.tag("Update").w("自动检查更新重试仍失败，等待下次启动")
+            }
+        } catch (e: Exception) {
+            wasAutoCheck = false
+            Timber.tag("Update").w(e, "自动检查更新失败（静默）")
         }
     }
 
     /**
      * 开始下载更新包
+     *
+     * 自动回退机制：构建下载 URL 队列（指定的镜像 → 原始地址 → 其他镜像），
+     * 依次尝试，某个源失败后自动切换到下一个，直到成功或全部失败。
+     *
+     * @param mirrorUrl 指定的镜像 URL，null 表示从原始下载地址开始
      */
     fun startDownload(mirrorUrl: String? = null) {
         val updateInfo = selectedUpdateInfo ?: return
-        val url = mirrorUrl ?: updateInfo.downloadUrl
+
+        // 构建下载 URL 队列：指定的 URL 优先，然后回退到原始 URL 和其他镜像
+        val urlQueue = buildDownloadUrlQueue(updateInfo, mirrorUrl)
+
         viewModelScope.launch {
-            apkDownloader.resetState()
-            // 删除旧的部分文件，确保从头开始新下载
-            val dir = File(application.externalCacheDir ?: application.cacheDir, "updates")
-            dir.listFiles()?.forEach { it.delete() }
-            apkDownloader.downloadApk(url, updateInfo.fileName)
+            for ((index, url) in urlQueue.withIndex()) {
+                // 每次尝试前重置状态并清理旧文件（不同 URL 的文件内容可能不同，不能断点续传）
+                apkDownloader.resetState()
+                val dir = File(application.externalCacheDir ?: application.cacheDir, "updates")
+                dir.listFiles()?.forEach { it.delete() }
+
+                if (index > 0) {
+                    Timber.tag("Update").w("上一个下载源失败，自动尝试第 ${index + 1}/${urlQueue.size} 个源: $url")
+                }
+
+                val result = apkDownloader.downloadApk(url, updateInfo.fileName)
+                if (result != null) {
+                    Timber.tag("Update").i("下载成功（第 ${index + 1} 个源）: $url")
+                    return@launch
+                }
+            }
+
+            // 所有 URL 都失败，最终错误状态已由最后一次 downloadApk 设置
+            Timber.tag("Update").e("所有 ${urlQueue.size} 个下载源均失败")
         }
+    }
+
+    /**
+     * 构建下载 URL 队列
+     * 指定的镜像 URL 优先，然后是原始下载地址，最后是其他镜像
+     */
+    private fun buildDownloadUrlQueue(updateInfo: UpdateInfo, mirrorUrl: String?): List<String> {
+        val queue = mutableListOf<String>()
+        val seen = mutableSetOf<String>()
+
+        fun addUrl(url: String) {
+            if (url.isNotBlank() && url !in seen) {
+                queue.add(url)
+                seen.add(url)
+            }
+        }
+
+        // 指定的镜像 URL 优先
+        if (mirrorUrl != null) {
+            addUrl(mirrorUrl)
+        }
+        // 原始下载地址
+        addUrl(updateInfo.downloadUrl)
+        // 其他镜像 URL（作为回退）
+        updateInfo.mirrorUrls.forEach { addUrl(it.url) }
+
+        return queue
     }
 
     fun pauseDownload() = apkDownloader.pauseDownload()
@@ -242,6 +333,7 @@ class UpdateViewModel @Inject constructor(
     fun resetCheckState() {
         _checkState.value = CheckState.Idle
         wasAutoCheck = false
+        hasRetried = false
     }
 
     /**

@@ -1084,6 +1084,7 @@
     <string name="update_install_later">後でインストール</string>
     <string name="update_retry_download">再ダウンロード</string>
     <string name="update_pause">一時停止</string>
+    <string name="update_paused">一時停止中</string>
     <string name="update_resume">再開</string>
     <string name="update_release_notes">リリースノート</string>
     <string name="update_mirror_label">ミラーソース</string>

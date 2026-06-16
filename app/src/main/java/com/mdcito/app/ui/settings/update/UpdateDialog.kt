@@ -135,6 +135,7 @@ fun UpdateDialog(
                         onOpenInstallPermission = onOpenInstallPermission,
                         onSetUpdateSource = onSetUpdateSource,
                         onCheckUpdate = onCheckUpdate,
+                        onDismiss = onDismiss,
                         uriHandler = uriHandler,
                     )
                 }
@@ -183,6 +184,7 @@ private fun UpdateAvailableContent(
     onOpenInstallPermission: () -> Unit,
     onSetUpdateSource: (String) -> Unit,
     onCheckUpdate: (UpdateSource?) -> Unit,
+    onDismiss: () -> Unit,
     uriHandler: androidx.compose.ui.platform.UriHandler,
 ) {
     // 版本不一致时默认选中版本号更高的平台
@@ -239,12 +241,12 @@ private fun UpdateAvailableContent(
         Spacer(modifier = Modifier.height(8.dp))
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.errorContainer,
+            color = MaterialTheme.colorScheme.tertiaryContainer,
         ) {
             Text(
                 text = stringResource(R.string.update_version_mismatch_hint),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onErrorContainer,
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
             )
         }
@@ -320,7 +322,12 @@ private fun UpdateAvailableContent(
         if (updateInfo.releaseNotes.isNotBlank()) {
             var expanded by remember { mutableStateOf(false) }
             val notes = updateInfo.releaseNotes
-            val preview = notes.take(200)
+            // 安全截断：避免在代理对（如 emoji）中间截断
+            val previewEnd = minOf(200, notes.length).let { end ->
+                if (end < notes.length && Character.isHighSurrogate(notes[end - 1])) end - 1 else end
+            }
+            val preview = notes.substring(0, previewEnd)
+            val isLong = notes.length > 200
 
             Surface(
                 shape = RoundedCornerShape(12.dp),
@@ -336,11 +343,11 @@ private fun UpdateAvailableContent(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = if (expanded || notes.length <= 200) notes else "$preview...",
+                        text = if (expanded || !isLong) notes else "$preview...",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    if (notes.length > 200) {
+                    if (isLong) {
                         Spacer(modifier = Modifier.height(4.dp))
                         TextButton(
                             onClick = { expanded = !expanded },
@@ -368,8 +375,25 @@ private fun UpdateAvailableContent(
             onResumeDownload = onResumeDownload,
             onCancelDownload = onCancelDownload,
             onInstallApk = onInstallApk,
-            uriHandler = uriHandler,
+            onDismiss = onDismiss,
         )
+
+        // 访问发布页按钮（始终可见，不受下载状态影响）
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(
+            onClick = {
+                try { uriHandler.openUri(updateInfo.source.repoUrl + "/releases") } catch (_: Exception) {}
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+        ) {
+            Text(
+                text = if (updateInfo.source == UpdateSource.GITHUB)
+                    stringResource(R.string.update_visit_github)
+                else stringResource(R.string.update_visit_gitee),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
     } else {
         // 选中的平台没有结果，提示切换
         Spacer(modifier = Modifier.height(8.dp))
@@ -383,10 +407,7 @@ private fun UpdateAvailableContent(
     // 重新检查按钮（切换到单个源检查）
     Spacer(modifier = Modifier.height(8.dp))
     OutlinedButton(
-        onClick = {
-            onSetUpdateSource(if (selectedPlatform == UpdateSource.GITEE) "GITEE" else "GITHUB")
-            onCheckUpdate(selectedPlatform)
-        },
+        onClick = { onCheckUpdate(selectedPlatform) },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
     ) {
@@ -406,7 +427,7 @@ private fun DownloadSection(
     onResumeDownload: () -> Unit,
     onCancelDownload: () -> Unit,
     onInstallApk: (String) -> Unit,
-    uriHandler: androidx.compose.ui.platform.UriHandler,
+    onDismiss: () -> Unit,
 ) {
     when (downloadState) {
         is DownloadState.Idle -> {
@@ -443,22 +464,6 @@ private fun DownloadSection(
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
-                onClick = {
-                    try { uriHandler.openUri(updateInfo.source.repoUrl + "/releases") } catch (_: Exception) {}
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-            ) {
-                Text(
-                    text = if (updateInfo.source == UpdateSource.GITHUB)
-                        stringResource(R.string.update_visit_github)
-                    else stringResource(R.string.update_visit_gitee),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
         }
 
         is DownloadState.Downloading -> DownloadProgressContent(
@@ -492,7 +497,7 @@ private fun DownloadSection(
             Spacer(modifier = Modifier.height(12.dp))
             Button(onClick = { onInstallApk(downloadState.filePath) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Text(stringResource(R.string.update_install_now)) }
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(onClick = {}, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Text(stringResource(R.string.update_install_later)) }
+            OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Text(stringResource(R.string.update_install_later)) }
         }
 
         is DownloadState.Error -> {
@@ -535,6 +540,15 @@ private fun DownloadProgressContent(
         fontWeight = FontWeight.W700,
         color = MaterialTheme.colorScheme.primary,
     )
+    if (isPaused) {
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = stringResource(R.string.update_paused),
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.W600,
+            color = MaterialTheme.colorScheme.tertiary,
+        )
+    }
     Spacer(modifier = Modifier.height(4.dp))
     Row(
         modifier = Modifier.fillMaxWidth(),

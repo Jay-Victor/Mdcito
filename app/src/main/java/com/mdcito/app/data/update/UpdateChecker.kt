@@ -29,13 +29,23 @@ class UpdateChecker @Inject constructor(
         private const val GITEE_OWNER = "Jay-Victor"
         private const val GITEE_REPO = "Mdcito"
 
-        // GitHub 镜像加速地址
+        // GitHub 镜像加速地址（2026-06 验证可用，三个均为独立服务）
         private val GITHUB_MIRRORS = listOf(
-            MirrorUrl("ghfast.top", "https://ghfast.top/"),
-            MirrorUrl("ghp.ci", "https://ghp.ci/"),
-            MirrorUrl("ghproxy.cc", "https://ghproxy.cc/")
+            MirrorUrl("gh-proxy.com", "https://gh-proxy.com/"),  // 日请求 3000w+，最活跃
+            MirrorUrl("ghfast.top", "https://ghfast.top/"),      // 保留，但官方承认经常被墙
+            MirrorUrl("ghproxy.net", "https://ghproxy.net/")     // 独立服务，支持断点续传
         )
     }
+
+    /**
+     * 单平台检查结果
+     * @param updateInfo 新版本信息，null 表示无新版本
+     * @param contacted API 是否成功联系（收到并解析了有效响应）
+     */
+    data class CheckResult(
+        val updateInfo: UpdateInfo?,
+        val contacted: Boolean
+    )
 
     /**
      * 并行检查两个平台的更新，同时返回双方结果
@@ -44,54 +54,62 @@ class UpdateChecker @Inject constructor(
     suspend fun checkAllSources(currentVersion: String): DualCheckResult = coroutineScope {
         val giteeDeferred = async(Dispatchers.IO) { runCatching { checkGiteeRelease(currentVersion) } }
         val githubDeferred = async(Dispatchers.IO) { runCatching { checkGitHubRelease(currentVersion) } }
+
+        val giteeResult = giteeDeferred.await().getOrNull()
+        val githubResult = githubDeferred.await().getOrNull()
+
         DualCheckResult(
-            gitee = giteeDeferred.await().getOrNull(),
-            github = githubDeferred.await().getOrNull()
+            gitee = giteeResult?.updateInfo,
+            github = githubResult?.updateInfo,
+            giteeContacted = giteeResult?.contacted ?: false,
+            githubContacted = githubResult?.contacted ?: false
         )
     }
 
     /**
      * 从指定平台检查更新
+     * @return [CheckResult] 包含更新信息和 API 联系状态
      */
-    suspend fun checkFromSource(source: UpdateSource, currentVersion: String): UpdateInfo? {
+    suspend fun checkFromSource(source: UpdateSource, currentVersion: String): CheckResult {
         return withContext(Dispatchers.IO) {
             when (source) {
-                UpdateSource.GITHUB -> runCatching { checkGitHubRelease(currentVersion) }.getOrNull()
-                UpdateSource.GITEE -> runCatching { checkGiteeRelease(currentVersion) }.getOrNull()
+                UpdateSource.GITHUB -> runCatching { checkGitHubRelease(currentVersion) }.getOrNull() ?: CheckResult(null, contacted = false)
+                UpdateSource.GITEE -> runCatching { checkGiteeRelease(currentVersion) }.getOrNull() ?: CheckResult(null, contacted = false)
             }
         }
     }
 
-    private fun checkGitHubRelease(currentVersion: String): UpdateInfo? {
+    private fun checkGitHubRelease(currentVersion: String): CheckResult {
         val url = "https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest"
         val response = executeRequest(url)
         if (response == null) {
             Timber.tag("UpdateChecker").w("GitHub API 请求失败")
-            return null
+            return CheckResult(null, contacted = false)
         }
 
         val release = try {
             gson.fromJson(response, GitHubRelease::class.java)
         } catch (e: Exception) {
             Timber.tag("UpdateChecker").e(e, "解析 GitHub Release 失败")
-            return null
+            return CheckResult(null, contacted = false)
         }
 
-        if (release.draft || release.prerelease) return null
+        // 从此处起，API 已成功联系
+        if (release.draft || release.prerelease) return CheckResult(null, contacted = true)
 
         val remoteVersion = release.tagName.trimStart('v')
-        if (!VersionComparator.isNewer(remoteVersion, currentVersion)) return null
+        if (!VersionComparator.isNewer(remoteVersion, currentVersion)) return CheckResult(null, contacted = true)
 
         // 查找 APK asset
         val apkAsset = release.assets.find {
             it.name.endsWith(".apk", ignoreCase = true)
-        } ?: return null
+        } ?: return CheckResult(null, contacted = true)
 
         // URL 验证：确保包含有效的 HTTP/HTTPS 协议前缀
         val downloadUrl = apkAsset.browserDownloadUrl
         if (!downloadUrl.startsWith("http://") && !downloadUrl.startsWith("https://")) {
             Timber.tag("UpdateChecker").w("GitHub 下载 URL 格式无效: $downloadUrl")
-            return null
+            return CheckResult(null, contacted = true)
         }
 
         // 生成镜像 URL（确保每个镜像 URL 都有完整的协议前缀）
@@ -106,43 +124,47 @@ class UpdateChecker @Inject constructor(
             }
         }
 
-        return UpdateInfo(
-            versionName = remoteVersion,
-            versionCode = parseVersionCode(remoteVersion),
-            releaseNotes = release.body,
-            publishedAt = release.publishedAt,
-            downloadUrl = downloadUrl,
-            downloadSize = apkAsset.size,
-            fileName = apkAsset.name,
-            source = UpdateSource.GITHUB,
-            mirrorUrls = mirrorUrls
+        return CheckResult(
+            updateInfo = UpdateInfo(
+                versionName = remoteVersion,
+                versionCode = parseVersionCode(remoteVersion),
+                releaseNotes = release.body,
+                publishedAt = release.publishedAt,
+                downloadUrl = downloadUrl,
+                downloadSize = apkAsset.size,
+                fileName = apkAsset.name,
+                source = UpdateSource.GITHUB,
+                mirrorUrls = mirrorUrls
+            ),
+            contacted = true
         )
     }
 
-    private fun checkGiteeRelease(currentVersion: String): UpdateInfo? {
+    private fun checkGiteeRelease(currentVersion: String): CheckResult {
         val url = "https://gitee.com/api/v5/repos/$GITEE_OWNER/$GITEE_REPO/releases/latest"
         val response = executeRequest(url)
         if (response == null) {
             Timber.tag("UpdateChecker").w("Gitee API 请求失败")
-            return null
+            return CheckResult(null, contacted = false)
         }
 
         val release = try {
             gson.fromJson(response, GiteeRelease::class.java)
         } catch (e: Exception) {
             Timber.tag("UpdateChecker").e(e, "解析 Gitee Release 失败")
-            return null
+            return CheckResult(null, contacted = false)
         }
 
-        if (release.draft || release.prerelease) return null
+        // 从此处起，API 已成功联系
+        if (release.draft || release.prerelease) return CheckResult(null, contacted = true)
 
         val remoteVersion = release.tagName.trimStart('v')
-        if (!VersionComparator.isNewer(remoteVersion, currentVersion)) return null
+        if (!VersionComparator.isNewer(remoteVersion, currentVersion)) return CheckResult(null, contacted = true)
 
         // 查找 APK asset
         val apkAsset = release.assets.find {
             it.name.endsWith(".apk", ignoreCase = true)
-        } ?: return null
+        } ?: return CheckResult(null, contacted = true)
 
         // 使用 browser_download_url 作为下载链接（这是直接的下载 URL）
         // 如果 browser_download_url 为空，则构造标准的下载 URL
@@ -154,19 +176,22 @@ class UpdateChecker @Inject constructor(
         // URL 验证：确保包含有效的 HTTP/HTTPS 协议前缀
         if (!downloadUrl.startsWith("http://") && !downloadUrl.startsWith("https://")) {
             Timber.tag("UpdateChecker").w("Gitee 下载 URL 格式无效: $downloadUrl")
-            return null
+            return CheckResult(null, contacted = true)
         }
 
-        return UpdateInfo(
-            versionName = remoteVersion,
-            versionCode = parseVersionCode(remoteVersion),
-            releaseNotes = release.body,
-            publishedAt = release.publishedAt.ifBlank { release.createdAt },
-            downloadUrl = downloadUrl,
-            downloadSize = apkAsset.size,
-            fileName = apkAsset.name,
-            source = UpdateSource.GITEE,
-            mirrorUrls = emptyList()
+        return CheckResult(
+            updateInfo = UpdateInfo(
+                versionName = remoteVersion,
+                versionCode = parseVersionCode(remoteVersion),
+                releaseNotes = release.body,
+                publishedAt = release.publishedAt.ifBlank { release.createdAt },
+                downloadUrl = downloadUrl,
+                downloadSize = apkAsset.size,
+                fileName = apkAsset.name,
+                source = UpdateSource.GITEE,
+                mirrorUrls = emptyList()
+            ),
+            contacted = true
         )
     }
 

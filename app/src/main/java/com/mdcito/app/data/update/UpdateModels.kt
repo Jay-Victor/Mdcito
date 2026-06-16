@@ -71,11 +71,18 @@ data class UpdateInfo(
 
 /**
  * 双平台并行检测结果
+ * @param giteeContacted Gitee API 是否成功联系（收到有效响应）
+ * @param githubContacted GitHub API 是否成功联系（收到有效响应）
  */
 data class DualCheckResult(
     val gitee: UpdateInfo?,
-    val github: UpdateInfo?
-)
+    val github: UpdateInfo?,
+    val giteeContacted: Boolean = false,
+    val githubContacted: Boolean = false
+) {
+    /** 是否至少有一个平台成功联系 */
+    val anyContacted: Boolean get() = giteeContacted || githubContacted
+}
 
 /**
  * 镜像下载地址

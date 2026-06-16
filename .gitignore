@@ -13,6 +13,9 @@
 /app/build
 /app/release
 
+# 发布产物（APK + 更新日志），独立于构建目录
+/Releases
+
 *.apk
 *.aab
 *.ap_

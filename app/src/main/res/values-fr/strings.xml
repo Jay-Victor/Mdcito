@@ -1087,6 +1087,7 @@
     <string name="update_install_later">Installer plus tard</string>
     <string name="update_retry_download">Réessayer le téléchargement</string>
     <string name="update_pause">Pause</string>
+    <string name="update_paused">En pause</string>
     <string name="update_resume">Reprendre</string>
     <string name="update_release_notes">Notes de version</string>
     <string name="update_mirror_label">Source miroir</string>

@@ -1084,6 +1084,7 @@
     <string name="update_install_later">나중에 설치</string>
     <string name="update_retry_download">다시 다운로드</string>
     <string name="update_pause">일시정지</string>
+    <string name="update_paused">일시정지됨</string>
     <string name="update_resume">재개</string>
     <string name="update_release_notes">릴리스 노트</string>
     <string name="update_mirror_label">미러 소스</string>

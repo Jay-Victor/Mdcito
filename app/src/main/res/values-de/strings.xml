@@ -1087,6 +1087,7 @@
     <string name="update_install_later">Später installieren</string>
     <string name="update_retry_download">Download wiederholen</string>
     <string name="update_pause">Pause</string>
+    <string name="update_paused">Pausiert</string>
     <string name="update_resume">Fortsetzen</string>
     <string name="update_release_notes">Versionshinweise</string>
     <string name="update_mirror_label">Spiegel-Server</string>

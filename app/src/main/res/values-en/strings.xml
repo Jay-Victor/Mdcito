@@ -1085,6 +1085,7 @@
     <string name="update_install_later">Install Later</string>
     <string name="update_retry_download">Retry Download</string>
     <string name="update_pause">Pause</string>
+    <string name="update_paused">Paused</string>
     <string name="update_resume">Resume</string>
     <string name="update_release_notes">Release Notes</string>
     <string name="update_mirror_label">Mirror Source</string>

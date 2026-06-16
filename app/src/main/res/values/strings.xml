@@ -1096,6 +1096,7 @@
     <string name="update_install_later">稍后安装</string>
     <string name="update_retry_download">重新下载</string>
     <string name="update_pause">暂停</string>
+    <string name="update_paused">已暂停</string>
     <string name="update_resume">继续</string>
     <string name="update_release_notes">更新内容</string>
     <string name="update_mirror_label">镜像下载源</string>

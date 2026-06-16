@@ -7,6 +7,40 @@
 
 ---
 
+## [1.0.7] - 2026-06-16
+
+### Fixed
+
+#### OTA 更新
+- 修复自动检查更新在低版本启动时无提示的问题，根因及修复如下：
+  - **节流时间过长**：将自动检查的节流间隔从 8 小时缩短为 1 小时，避免新版本发布后用户长时间收不到更新提示
+  - **网络失败仍更新检查时间**：此前网络请求失败时仍会更新 `lastUpdateCheckTime`，导致后续 8 小时内不再检查；改为仅在至少一个平台（Gitee/GitHub）成功联系 API 时才更新检查时间，网络失败时不阻塞下次检查
+  - **新增 `DualCheckResult.giteeContacted` / `githubContacted` 字段**：区分"网络失败"与"已是最新版本"两种 null 结果，使节流逻辑能正确判断检查是否成功
+  - **新增自动重试机制**：两个平台均联系失败时（如启动时网络未就绪），延迟 30 秒自动重试一次，避免用户需手动检查或重启应用
+  - **修复 `wasAutoCheck` 状态残留**：自动检查未发现新版本时重置该标记，避免状态管理不严谨
+  - **修复手动检查单平台时 `contacted` 标志不准确**：此前 `giteeContacted = source == UpdateSource.GITEE` 即使网络失败也为 true；改为依据 `checkResult.contacted`，确保网络失败时不更新检查时间
+
+#### 镜像加速
+- 替换已失效的 GitHub 镜像节点 `ghp.ci`（2026 年已被 GFW 封锁，ghproxy.link 官方确认）为 `gh-proxy.com`（日请求 3000w+，最活跃）
+- 替换假冗余镜像 `ghproxy.cc`（urlquery.net 报告证实其跳转到 `ghfast.top`，非独立服务）为 `ghproxy.net`（独立服务，支持断点续传）
+- 现在三个镜像均为独立服务，形成真正的容灾冗余
+
+#### 更新弹窗交互
+- 修复「稍后安装」按钮空操作问题：此前 `onClick = {}` 点击后无任何反应，改为正确关闭对话框
+- 修复版本不一致提示颜色过强：从 `errorContainer`（红色）改为 `tertiaryContainer`，版本不一致是信息提示而非错误
+- 修复暂停状态提示不明确：暂停时显示"已暂停"文字提示（tertiary 颜色），避免用户困惑为何进度不动
+- 修复「访问发布页」按钮下载开始后消失：从 `DownloadSection` 的 Idle 状态移至 `UpdateAvailableContent`，所有下载状态下均可见
+- 修复更新日志按 char 截断可能在代理对（如 emoji）中间截断的问题
+- 移除「重新检查」按钮中多余的 `onSetUpdateSource` 调用，消除时序竞态
+
+### Added
+
+#### OTA 更新
+- 新增下载 URL 队列自动回退机制：构建下载 URL 队列（指定的镜像 → 原始地址 → 其他镜像），某个源下载失败后自动切换到下一个，直到成功或全部失败，用户无需手动重试不同镜像
+- 新增 `update_paused` 字符串资源（中/英/日/韩/德/法/繁中 7 种语言）
+
+---
+
 ## [1.0.6] - 2026-06-16
 
 ### Fixed
@@ -167,6 +201,7 @@
 
 ---
 
+[1.0.7]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.7
 [1.0.6]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.6
 [1.0.5]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.5
 [1.0.4]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.4
