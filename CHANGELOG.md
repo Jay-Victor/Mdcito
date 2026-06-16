@@ -7,6 +7,18 @@
 
 ---
 
+## [1.0.3] - 2026-06-16
+
+### Fixed
+
+#### OTA 更新
+- 修复自动检查更新发现新版本后不会自动弹出更新提示对话框的问题
+- 添加 `wasAutoCheck` 标志区分自动检查和手动检查结果
+- 添加 `shouldAutoShowDialog()` 和 `markAutoDialogShown()` 方法控制弹窗行为
+- 用户关闭自动弹窗后，下次进入 AboutScreen 不会重复弹出
+
+---
+
 ## [1.0.2] - 2026-06-16
 
 ### Fixed
@@ -121,6 +133,7 @@
 
 ---
 
+[1.0.3]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.3
 [1.0.2]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.0

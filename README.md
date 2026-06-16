@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Platform-Android%2014%2B-brightgreen" alt="Platform" />
   <img src="https://img.shields.io/badge/minSdk-34-green" alt="Min SDK" />
   <img src="https://img.shields.io/badge/targetSdk-36-blue" alt="Target SDK" />
-  <img src="https://img.shields.io/badge/Version-1.0.2-orange" alt="Version" />
+  <img src="https://img.shields.io/badge/Version-1.0.3-orange" alt="Version" />
   <img src="https://img.shields.io/badge/License-AGPL--3.0%20%2F%20Commercial-red" alt="License" />
   <img src="https://img.shields.io/badge/Language-Kotlin-purple" alt="Language" />
   <img src="https://img.shields.io/badge/UI-Jetpack%20Compose%20%2B%20Material%203-4285F4" alt="UI" />
@@ -596,7 +596,7 @@ Mdcito 的开发受益于以下开源项目：
   <img src="https://img.shields.io/badge/Platform-Android%2014%2B-brightgreen" alt="Platform" />
   <img src="https://img.shields.io/badge/minSdk-34-green" alt="Min SDK" />
   <img src="https://img.shields.io/badge/targetSdk-36-blue" alt="Target SDK" />
-  <img src="https://img.shields.io/badge/Version-1.0.2-orange" alt="Version" />
+  <img src="https://img.shields.io/badge/Version-1.0.3-orange" alt="Version" />
   <img src="https://img.shields.io/badge/License-AGPL--3.0%20%2F%20Commercial-red" alt="License" />
   <img src="https://img.shields.io/badge/Language-Kotlin-purple" alt="Language" />
   <img src="https://img.shields.io/badge/UI-Jetpack%20Compose%20%2B%20Material%203-4285F4" alt="UI" />

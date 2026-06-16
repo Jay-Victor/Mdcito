@@ -71,6 +71,14 @@ fun AboutScreen(
         updateViewModel.autoCheckIfEnabled()
     }
 
+    // 监听自动检查结果，发现新版本时自动弹出对话框（仅首次）
+    LaunchedEffect(checkState) {
+        if (updateViewModel.shouldAutoShowDialog()) {
+            showUpdateDialog = true
+            updateViewModel.markAutoDialogShown()
+        }
+    }
+
     // 监听安装权限事件
     LaunchedEffect(Unit) {
         updateViewModel.updateEvent.collect { event ->

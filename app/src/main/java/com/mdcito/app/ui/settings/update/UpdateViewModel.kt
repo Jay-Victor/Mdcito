@@ -66,6 +66,7 @@ class UpdateViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "AUTO")
 
     private var currentResult: DualCheckResult? = null
+    private var wasAutoCheck = false  // 标记是否来自自动检查
 
     /** 获取当前选中的更新信息，优先 Gitee，其次 GitHub */
     val selectedUpdateInfo: UpdateInfo?
@@ -81,6 +82,7 @@ class UpdateViewModel @Inject constructor(
     fun checkForUpdate(source: UpdateSource? = null) {
         if (_checkState.value is CheckState.Checking) return
         _checkState.value = CheckState.Checking
+        wasAutoCheck = false  // 手动检查
 
         viewModelScope.launch {
             try {
@@ -130,6 +132,7 @@ class UpdateViewModel @Inject constructor(
             }
 
             try {
+                wasAutoCheck = true  // 标记为自动检查
                 val result = updateChecker.checkAllSources(BuildConfig.VERSION_NAME)
                 if (result.gitee != null || result.github != null) {
                     currentResult = result
@@ -231,6 +234,21 @@ class UpdateViewModel @Inject constructor(
      */
     fun resetCheckState() {
         _checkState.value = CheckState.Idle
+        wasAutoCheck = false
+    }
+
+    /**
+     * 检查是否应该自动弹出更新对话框（仅自动检查时触发）
+     */
+    fun shouldAutoShowDialog(): Boolean {
+        return wasAutoCheck && _checkState.value is CheckState.Available
+    }
+
+    /**
+     * 标记自动弹窗已显示，避免重复弹出
+     */
+    fun markAutoDialogShown() {
+        wasAutoCheck = false
     }
 
     fun setAutoCheckUpdate(enabled: Boolean) {
