@@ -7,6 +7,17 @@
 
 ---
 
+## [1.0.8] - 2026-06-17
+
+### Changed
+
+#### OTA 更新
+- 自动检查更新改为每次应用启动时执行（用户开启「自动检查更新」后即生效），移除原先的 1 小时节流间隔，确保新版本发布后用户下次启动即可收到提示
+- 移除已无用的 `lastUpdateCheckTime` 持久化字段及其在 DataStore / Repository / ViewModel 中的读写逻辑（该字段仅用于节流判断，节流移除后变为死代码）
+- 保留启动时网络未就绪的 30 秒自动重试机制
+
+---
+
 ## [1.0.7] - 2026-06-16
 
 ### Fixed
@@ -201,6 +212,7 @@
 
 ---
 
+[1.0.8]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.8
 [1.0.7]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.7
 [1.0.6]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.6
 [1.0.5]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.5

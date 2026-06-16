@@ -118,11 +118,6 @@ class UpdateViewModel @Inject constructor(
                     _checkState.value = CheckState.UpToDate
                     Timber.tag("Update").i("当前已是最新版本")
                 }
-
-                // 仅在至少一个平台成功联系时更新检查时间，避免网络失败时阻塞下次检查
-                if (result.anyContacted) {
-                    settingsRepository.setLastUpdateCheckTime(System.currentTimeMillis())
-                }
             } catch (e: Exception) {
                 _checkState.value = CheckState.Error(e.message ?: "检查更新失败")
                 Timber.tag("Update").e(e, "检查更新失败")
@@ -133,23 +128,13 @@ class UpdateViewModel @Inject constructor(
     /**
      * 应用启动时自动检查更新（静默模式，并行查询双平台）
      *
-     * 改进点：
-     * 1. 节流时间从 8 小时缩短为 1 小时，避免新版本发布后长时间不提示
-     * 2. 仅在至少一个平台成功联系时更新检查时间，网络失败时不阻塞下次检查
-     * 3. 两个平台均联系失败时自动重试一次（延迟 30 秒），应对启动时网络未就绪
-     * 4. 未发现新版本时重置 wasAutoCheck，避免状态残留
+     * 行为：用户开启「自动检查更新」后，每次应用启动都执行一次检查，不做节流。
+     * 两个平台均联系失败时自动重试一次（延迟 30 秒），应对启动时网络未就绪。
      */
     fun autoCheckIfEnabled() {
         viewModelScope.launch {
             val autoCheck = settingsRepository.autoCheckUpdate.first()
             if (!autoCheck) return@launch
-
-            val lastCheckTime = settingsRepository.lastUpdateCheckTime.first()
-            val oneHour = 60 * 60 * 1000L
-            if (System.currentTimeMillis() - lastCheckTime < oneHour) {
-                Timber.tag("Update").d("距上次检查不足 1 小时，跳过自动检查")
-                return@launch
-            }
 
             performAutoCheck(isRetry = false)
         }
@@ -157,7 +142,7 @@ class UpdateViewModel @Inject constructor(
 
     /**
      * 执行自动检查的核心逻辑
-     * @param isRetry 是否为重试（重试时不检查节流时间）
+     * @param isRetry 是否为重试
      */
     private suspend fun performAutoCheck(isRetry: Boolean) {
         try {
@@ -173,21 +158,21 @@ class UpdateViewModel @Inject constructor(
                 wasAutoCheck = false
             }
 
-            // 仅在至少一个平台成功联系时更新检查时间
-            if (result.anyContacted) {
-                settingsRepository.setLastUpdateCheckTime(System.currentTimeMillis())
-            } else if (!isRetry && !hasRetried) {
-                // 两个平台均未联系成功，且尚未重试过 → 延迟重试
-                hasRetried = true
-                Timber.tag("Update").w("自动检查更新失败：两个平台均未响应，30 秒后重试")
-                delay(30_000)
-                // 重试前检查是否已有结果（避免用户手动检查后重复弹窗）
-                if (_checkState.value !is CheckState.Available) {
-                    performAutoCheck(isRetry = true)
+            // 两个平台均未联系成功时重试一次（应对启动时网络未就绪）
+            if (!result.anyContacted) {
+                if (!isRetry && !hasRetried) {
+                    // 尚未重试过 → 延迟重试
+                    hasRetried = true
+                    Timber.tag("Update").w("自动检查更新失败：两个平台均未响应，30 秒后重试")
+                    delay(30_000)
+                    // 重试前检查是否已有结果（避免用户手动检查后重复弹窗）
+                    if (_checkState.value !is CheckState.Available) {
+                        performAutoCheck(isRetry = true)
+                    }
+                } else if (isRetry) {
+                    // 重试仍失败，记录日志但不阻塞下次启动检查
+                    Timber.tag("Update").w("自动检查更新重试仍失败，等待下次启动")
                 }
-            } else if (isRetry) {
-                // 重试仍失败，记录日志但不阻塞下次启动检查
-                Timber.tag("Update").w("自动检查更新重试仍失败，等待下次启动")
             }
         } catch (e: Exception) {
             wasAutoCheck = false

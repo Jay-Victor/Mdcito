@@ -154,7 +154,6 @@ class SettingsDataStore @Inject constructor(
         // ── 更新管理设置 ──
         val AUTO_CHECK_UPDATE = booleanPreferencesKey("auto_check_update")
         val UPDATE_SOURCE = stringPreferencesKey("update_source")
-        val LAST_UPDATE_CHECK_TIME = longPreferencesKey("last_update_check_time")
 
         // ── 过渡动画设置 ──
         val SPLASH_ANIMATION_ENABLED = booleanPreferencesKey("splash_animation_enabled")
@@ -688,11 +687,9 @@ class SettingsDataStore @Inject constructor(
     // ── 更新管理设置 ──
     val autoCheckUpdate: Flow<Boolean> = dataStore.data.map { it[Keys.AUTO_CHECK_UPDATE] ?: true }
     val updateSource: Flow<String> = dataStore.data.map { it[Keys.UPDATE_SOURCE] ?: "AUTO" }
-    val lastUpdateCheckTime: Flow<Long> = dataStore.data.map { it[Keys.LAST_UPDATE_CHECK_TIME] ?: 0L }
 
     suspend fun setAutoCheckUpdate(enabled: Boolean) { dataStore.edit { it[Keys.AUTO_CHECK_UPDATE] = enabled } }
     suspend fun setUpdateSource(source: String) { dataStore.edit { it[Keys.UPDATE_SOURCE] = source } }
-    suspend fun setLastUpdateCheckTime(time: Long) { dataStore.edit { it[Keys.LAST_UPDATE_CHECK_TIME] = time } }
 
     // ── 过渡动画设置 ──
     val splashAnimationEnabled: Flow<Boolean> = dataStore.data.map { it[Keys.SPLASH_ANIMATION_ENABLED] ?: true }
@@ -824,7 +821,6 @@ class SettingsDataStore @Inject constructor(
             // ── 更新管理设置 ──
             prefs[Keys.AUTO_CHECK_UPDATE] = true
             prefs[Keys.UPDATE_SOURCE] = "AUTO"
-            prefs[Keys.LAST_UPDATE_CHECK_TIME] = 0L
 
             // ── 过渡动画设置 ──
             prefs[Keys.SPLASH_ANIMATION_ENABLED] = true

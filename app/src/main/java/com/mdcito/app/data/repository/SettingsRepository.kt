@@ -282,7 +282,6 @@ class SettingsRepository @Inject constructor(
     // ── 更新管理设置 ──
     val autoCheckUpdate: Flow<Boolean> = settingsDataStore.autoCheckUpdate
     val updateSource: Flow<String> = settingsDataStore.updateSource
-    val lastUpdateCheckTime: Flow<Long> = settingsDataStore.lastUpdateCheckTime
 
     // ── 过渡动画设置 ──
     val splashAnimationEnabled: Flow<Boolean> = settingsDataStore.splashAnimationEnabled
@@ -325,7 +324,6 @@ class SettingsRepository @Inject constructor(
     // ── 更新管理设置 setter ──
     suspend fun setAutoCheckUpdate(enabled: Boolean) = settingsDataStore.setAutoCheckUpdate(enabled)
     suspend fun setUpdateSource(source: String) = settingsDataStore.setUpdateSource(source)
-    suspend fun setLastUpdateCheckTime(time: Long) = settingsDataStore.setLastUpdateCheckTime(time)
 
     // ── 过渡动画设置 setter ──
     suspend fun setSplashAnimationEnabled(enabled: Boolean) = settingsDataStore.setSplashAnimationEnabled(enabled)
