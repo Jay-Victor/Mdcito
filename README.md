@@ -523,12 +523,12 @@ Mdcito 采用**双协议授权**模式：
       <td align="center" width="50%">
         <strong>微信支付</strong>
         <br />
-        <img src="收款码/D8DF9B6B64CE89FE6B747A831FB9C66F.jpg" alt="微信收款码" width="280" />
+        <img src="收款码/2984E04608133EB2B263B2C2669A7E01.png" alt="微信收款码" width="280" />
       </td>
       <td align="center" width="50%">
         <strong>支付宝</strong>
         <br />
-        <img src="收款码/2984E04608133EB2B263B2C2669A7E01.png" alt="支付宝收款码" width="280" />
+        <img src="收款码/D8DF9B6B64CE89FE6B747A831FB9C66F.jpg" alt="支付宝收款码" width="280" />
       </td>
     </tr>
   </table>
@@ -1051,12 +1051,12 @@ If Mdcito has been helpful to you, please consider sponsoring to support ongoing
       <td align="center" width="50%">
         <strong>WeChat Pay</strong>
         <br />
-        <img src="收款码/D8DF9B6B64CE89FE6B747A831FB9C66F.jpg" alt="WeChat Pay QR" width="280" />
+        <img src="收款码/2984E04608133EB2B263B2C2669A7E01.png" alt="WeChat Pay QR" width="280" />
       </td>
       <td align="center" width="50%">
         <strong>Alipay</strong>
         <br />
-        <img src="收款码/2984E04608133EB2B263B2C2669A7E01.png" alt="Alipay QR" width="280" />
+        <img src="收款码/D8DF9B6B64CE89FE6B747A831FB9C66F.jpg" alt="Alipay QR" width="280" />
       </td>
     </tr>
   </table>
