@@ -544,6 +544,7 @@ Mdcito 采用**双协议授权**模式：
 | 仓库 | [https://github.com/Jay-Victor/Mdcito](https://github.com/Jay-Victor/Mdcito) |
 | 问题反馈 | [GitHub Issues](https://github.com/Jay-Victor/Mdcito/issues) |
 | QQ | 1061037299 |
+| QQ 交流群 | 952638024 |
 | 邮箱 | 18261738221@163.com |
 
 欢迎通过 Issues 提交 Bug 报告和功能建议，也欢迎 Fork 项目并提交 Pull Request。
@@ -1072,6 +1073,7 @@ If Mdcito has been helpful to you, please consider sponsoring to support ongoing
 | Repository | [https://github.com/Jay-Victor/Mdcito](https://github.com/Jay-Victor/Mdcito) |
 | Issues | [GitHub Issues](https://github.com/Jay-Victor/Mdcito/issues) |
 | QQ | 1061037299 |
+| QQ Group | 952638024 |
 | Email | 18261738221@163.com |
 
 Bug reports, feature suggestions, and pull requests are welcome.
