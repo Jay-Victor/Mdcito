@@ -300,7 +300,9 @@ class MainActivity : AppCompatActivity() {
             "cloud-sync" -> {
                 val code = uri.getQueryParameter("code")
                 val state = uri.getQueryParameter("state")
-                if (code != null) {
+                // OAuth 授权码仅允许 URL 安全字符，限制长度防止注入。
+                // state 的完整校验在 CloudSyncViewModel.handleOAuthCallback 中进行（比对已保存的随机 state）。
+                if (code != null && code.length <= 512 && code.all { it.isLetterOrDigit() || it == '-' || it == '_' || it == '.' || it == '~' || it == '/' || it == '+' || it == '=' }) {
                     pendingDeepLink = Route.CloudSyncSettings.createRoute(code, state)
                 }
             }

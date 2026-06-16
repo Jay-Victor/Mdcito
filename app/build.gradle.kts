@@ -34,8 +34,8 @@ android {
         applicationId = "com.mdcito.app"
         minSdk = 34
         targetSdk = 36
-        versionCode = 9
-        versionName = "1.0.8"
+        versionCode = 10
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -153,5 +153,6 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.okhttp)
     implementation(libs.hilt.work)
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
     ksp(libs.hilt.work.compiler)
 }

@@ -21,6 +21,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Context
 import android.net.Uri
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +34,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import timber.log.Timber
 
@@ -102,6 +107,9 @@ class EditorViewModel @Inject constructor(
 ) : ViewModel() {
 
     val fileId: Long? = savedStateHandle.get<Long>("fileId")
+
+    /** 保存操作互斥锁，防止自动保存与手动保存并发导致竞态 */
+    private val saveMutex = Mutex()
 
     private val _content = MutableStateFlow("")
     val content: StateFlow<String> = _content.asStateFlow()
@@ -435,44 +443,76 @@ class EditorViewModel @Inject constructor(
 
     fun save() {
         viewModelScope.launch {
-            _saveState.value = SaveState.SAVING
-            if (_content.value.length > 10000) {
-                Timber.tag("Editor").w("文件较大（超过10000字符）：${_fileName.value}，${_content.value.length}字符")
-            }
-            try {
-                fileId?.let { id ->
-                    fileRepository.getFileById(id)?.let { file ->
-                        val updatedFile = file.copy(
-                            updatedAt = System.currentTimeMillis(),
-                            size = _content.value.toByteArray().size.toLong(),
-                            content = _content.value,
-                        )
-                        fileRepository.updateFile(updatedFile)
+            // 使用互斥锁序列化保存，防止自动保存与手动保存并发导致竞态
+            saveMutex.withLock {
+                _saveState.value = SaveState.SAVING
+                if (_content.value.length > 10000) {
+                    Timber.tag("Editor").w("文件较大（超过10000字符）：${_fileName.value}，${_content.value.length}字符")
+                }
+                try {
+                    fileId?.let { id ->
+                        fileRepository.getFileById(id)?.let { file ->
+                            val updatedFile = file.copy(
+                                updatedAt = System.currentTimeMillis(),
+                                size = _content.value.toByteArray().size.toLong(),
+                                content = _content.value,
+                            )
+                            fileRepository.updateFile(updatedFile)
 
-                        // 同步内容到磁盘文件
-                        syncContentToDiskFile(updatedFile)
+                            // 同步内容到磁盘文件（切换到 IO 调度器避免主线程 IO）
+                            syncContentToDiskFile(updatedFile)
+                        }
                     }
-                }
-                lastSavedContent = _content.value
-                _isModified.value = false
-                _saveState.value = SaveState.SAVED
-                _lastSavedAt.value = System.currentTimeMillis()
-                _saveConfirmState.value = SaveConfirmState.SAVED
-                Timber.tag("Editor").i("文件已保存：${_fileName.value}")
-                createVersionSnapshot()
-                delay(200)
-                _saveConfirmState.value = SaveConfirmState.NONE
-                delay(1800)
-                if (_saveState.value == SaveState.SAVED) {
-                    _saveState.value = SaveState.IDLE
-                }
-            } catch (e: Exception) {
-                Timber.tag("Editor").e(e, "文件保存失败：${_fileName.value}")
-                _saveState.value = SaveState.ERROR
-                _saveConfirmState.value = SaveConfirmState.ERROR
-                viewModelScope.launch {
+                    lastSavedContent = _content.value
+                    _isModified.value = false
+                    _saveState.value = SaveState.SAVED
+                    _lastSavedAt.value = System.currentTimeMillis()
+                    _saveConfirmState.value = SaveConfirmState.SAVED
+                    Timber.tag("Editor").i("文件已保存：${_fileName.value}")
+                    createVersionSnapshot()
                     delay(200)
                     _saveConfirmState.value = SaveConfirmState.NONE
+                    delay(1800)
+                    if (_saveState.value == SaveState.SAVED) {
+                        _saveState.value = SaveState.IDLE
+                    }
+                } catch (e: Exception) {
+                    Timber.tag("Editor").e(e, "文件保存失败：${_fileName.value}")
+                    _saveState.value = SaveState.ERROR
+                    _saveConfirmState.value = SaveConfirmState.ERROR
+                    delay(200)
+                    _saveConfirmState.value = SaveConfirmState.NONE
+                }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // ViewModel 销毁时，若有未保存的修改，使用 NonCancellable 上下文同步落盘，
+        // 防止 viewModelScope 被取消导致正在进行的保存中断而数据丢失。
+        if (_isModified.value && _content.value != lastSavedContent) {
+            // viewModelScope 此时已被取消，使用 runBlocking + NonCancellable 完成最后一次保存
+            kotlinx.coroutines.runBlocking {
+                withContext(NonCancellable) {
+                    try {
+                        fileId?.let { id ->
+                            fileRepository.getFileById(id)?.let { file ->
+                                val updatedFile = file.copy(
+                                    updatedAt = System.currentTimeMillis(),
+                                    size = _content.value.toByteArray().size.toLong(),
+                                    content = _content.value,
+                                )
+                                fileRepository.updateFile(updatedFile)
+                                syncContentToDiskFile(updatedFile)
+                            }
+                        }
+                        lastSavedContent = _content.value
+                        _isModified.value = false
+                        Timber.tag("Editor").i("ViewModel 销毁前已保存：${_fileName.value}")
+                    } catch (e: Exception) {
+                        Timber.tag("Editor").e(e, "ViewModel 销毁前保存失败：${_fileName.value}")
+                    }
                 }
             }
         }
@@ -482,42 +522,48 @@ class EditorViewModel @Inject constructor(
         val path = file.path
         if (path.isBlank()) return
 
-        when {
-            // SAF URI 路径 (content://...)
-            path.startsWith("content://") -> {
-                try {
-                    val uri = Uri.parse(path)
-                    fileOperations.writeFileContent(uri, file.content)
-                } catch (e: Exception) { Timber.tag("Editor").e(e, "同步内容到SAF URI失败：$path") }
+        // 切换到 IO 调度器执行磁盘 IO，避免主线程 ANR
+        withContext(Dispatchers.IO) {
+            when {
+                // SAF URI 路径 (content://...)
+                path.startsWith("content://") -> {
+                    try {
+                        val uri = Uri.parse(path)
+                        fileOperations.writeFileContent(uri, file.content)
+                    } catch (e: Exception) { Timber.tag("Editor").e(e, "同步内容到SAF URI失败：$path") }
+                }
+                // 绝对路径 (工作区路径，如 /storage/emulated/0/...)
+                path.startsWith("/") -> {
+                    try {
+                        val diskFile = java.io.File(path)
+                        if (diskFile.exists() && diskFile.canWrite()) {
+                            diskFile.writeText(file.content)
+                        }
+                    } catch (e: Exception) { Timber.tag("Editor").e(e, "同步内容到磁盘文件失败：$path") }
+                }
+                // 虚拟路径 (documents/xxx.md) - 仅存在于数据库中，无需写入磁盘
             }
-            // 绝对路径 (工作区路径，如 /storage/emulated/0/...)
-            path.startsWith("/") -> {
-                try {
-                    val diskFile = java.io.File(path)
-                    if (diskFile.exists() && diskFile.canWrite()) {
-                        diskFile.writeText(file.content)
-                    }
-                } catch (e: Exception) { Timber.tag("Editor").e(e, "同步内容到磁盘文件失败：$path") }
-            }
-            // 虚拟路径 (documents/xxx.md) - 仅存在于数据库中，无需写入磁盘
         }
     }
 
     private suspend fun readContentFromPath(file: FileEntity): String {
         val path = file.path
         if (path.isBlank()) return ""
-        return try {
-            when {
-                path.startsWith("content://") -> fileOperations.readFileContent(Uri.parse(path))
-                path.startsWith("/") -> {
-                    val diskFile = java.io.File(path)
-                    if (diskFile.exists() && diskFile.canRead()) diskFile.readText() else ""
+        // 切换到 IO 调度器执行磁盘 IO，避免主线程 ANR
+        return withContext(Dispatchers.IO) {
+            try {
+                when {
+                    path.startsWith("content://") -> fileOperations.readFileContent(Uri.parse(path))
+                    path.startsWith("/") -> {
+                        val diskFile = java.io.File(path)
+                        if (diskFile.exists() && diskFile.canRead()) diskFile.readText() else ""
+                    }
+                    else -> ""
                 }
-                else -> ""
+            } catch (e: Exception) {
+                Timber.tag("Editor").e(e, "读取文件内容失败：$path")
+                ""
             }
-        } catch (e: Exception) {
-            Timber.tag("Editor").e(e, "读取文件内容失败：$path")
-            ""
         }
     }
 

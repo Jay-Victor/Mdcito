@@ -39,8 +39,8 @@ sealed class Route(val route: String) {
     data object CloudSyncSettings : Route("settings/cloud_sync?code={code}&state={state}") {
         fun createRoute(code: String? = null, state: String? = null): String {
             val params = mutableListOf<String>()
-            if (code != null) params.add("code=$code")
-            if (state != null) params.add("state=$state")
+            if (code != null) params.add("code=${java.net.URLEncoder.encode(code, "UTF-8")}")
+            if (state != null) params.add("state=${java.net.URLEncoder.encode(state, "UTF-8")}")
             return if (params.isEmpty()) "settings/cloud_sync"
             else "settings/cloud_sync?${params.joinToString("&")}"
         }

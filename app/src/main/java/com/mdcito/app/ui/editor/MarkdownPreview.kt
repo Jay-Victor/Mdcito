@@ -88,7 +88,10 @@ fun MarkdownPreview(
         webView.settings.javaScriptEnabled = true
         webView.settings.loadWithOverviewMode = true
         webView.settings.useWideViewPort = true
-        webView.settings.allowFileAccess = true
+        // 关闭文件访问，防止 XSS 通过 file:// 读取应用沙箱文件。
+        // 图片资源改由 shouldInterceptRequest 白名单加载。
+        webView.settings.allowFileAccess = false
+        webView.settings.allowContentAccess = false
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
@@ -105,14 +108,29 @@ fun MarkdownPreview(
             ): WebResourceResponse? {
                 val url = request?.url?.toString() ?: return super.shouldInterceptRequest(view, request)
 
-                // 处理本地文件路径的图片（应用内部存储，file:// URI）
-                if (url.startsWith("file:///data/")) {
-                    try {
-                        val file = java.io.File(android.net.Uri.parse(url).path ?: return super.shouldInterceptRequest(view, request))
+                // 仅允许应用私有图片目录下的本地文件，规范化路径后做归属校验，防止路径遍历
+                val allowedImageDir = java.io.File(context.filesDir, "images").canonicalPath
+                val allowedCacheImageDir = java.io.File(context.cacheDir, "images").canonicalPath
+
+                fun tryServeFile(file: java.io.File): WebResourceResponse? {
+                    return try {
+                        val canonical = file.canonicalPath
+                        if (!canonical.startsWith(allowedImageDir) &&
+                            !canonical.startsWith(allowedCacheImageDir)) {
+                            return null
+                        }
                         if (file.exists()) {
                             val mimeType = guessImageMimeType(file.name)
-                            return WebResourceResponse(mimeType, "UTF-8", file.inputStream())
-                        }
+                            WebResourceResponse(mimeType, "UTF-8", file.inputStream())
+                        } else null
+                    } catch (_: Exception) { null }
+                }
+
+                // 处理本地文件路径的图片（应用内部存储，file:// URI）
+                if (url.startsWith("file:///")) {
+                    try {
+                        val path = android.net.Uri.parse(url).path ?: return super.shouldInterceptRequest(view, request)
+                        return tryServeFile(java.io.File(path)) ?: super.shouldInterceptRequest(view, request)
                     } catch (_: Exception) {}
                 }
 
@@ -120,24 +138,25 @@ fun MarkdownPreview(
                 // WebView 会将其解析为 https://cdnjs.cloudflare.com/data/data/... 的相对 URL
                 if (url.startsWith("https://cdnjs.cloudflare.com/data/data/") || url.startsWith("/data/data/")) {
                     try {
-                        // 从 URL 中提取实际文件路径
                         val filePath = if (url.startsWith("https://")) {
                             url.removePrefix("https://cdnjs.cloudflare.com")
                         } else {
                             url
                         }
-                        val file = java.io.File(filePath)
-                        if (file.exists()) {
-                            val mimeType = guessImageMimeType(file.name)
-                            return WebResourceResponse(mimeType, "UTF-8", file.inputStream())
-                        }
+                        return tryServeFile(java.io.File(filePath)) ?: super.shouldInterceptRequest(view, request)
                     } catch (_: Exception) {}
                 }
 
                 // 处理 content:// URI 的图片（Photo Picker 等来源）
+                // 仅允许本应用 FileProvider 与系统媒体 Provider，防止读取其他应用导出的敏感数据
                 if (url.startsWith("content://")) {
                     try {
                         val uri = android.net.Uri.parse(url)
+                        val authority = uri.authority ?: return super.shouldInterceptRequest(view, request)
+                        val isAllowedAuthority = authority == "${context.packageName}.fileprovider" ||
+                            authority == "media" ||
+                            authority == "com.android.providers.media.documents"
+                        if (!isAllowedAuthority) return super.shouldInterceptRequest(view, request)
                         val inputStream = context.contentResolver.openInputStream(uri)
                         if (inputStream != null) {
                             val mimeType = context.contentResolver.getType(uri) ?: "image/*"
@@ -224,10 +243,13 @@ fun MarkdownPreview(
     LaunchedEffect(isPageLoaded, pendingAnchor) {
         if (isPageLoaded && pendingAnchor != null) {
             val anchor = pendingAnchor!!
+            // 使用 JSON.stringify 防止锚点字符串注入 JS
+            val anchorJson = org.json.JSONObject().put("a", anchor).toString()
+            val anchorLiteral = anchorJson.substring(anchorJson.indexOf(":") + 1, anchorJson.lastIndexOf("}")).trim()
             webView.evaluateJavascript(
                 """
                 (function() {
-                    var el = document.getElementById('$anchor');
+                    var el = document.getElementById($anchorLiteral);
                     if (el) {
                         el.scrollIntoView({behavior: 'smooth', block: 'start'});
                     }
@@ -305,12 +327,11 @@ private fun colorToCssHex(color: androidx.compose.ui.graphics.Color): String {
     return "#${String.format("%02X%02X%02X", (color.red * 255).toInt(), (color.green * 255).toInt(), (color.blue * 255).toInt())}"
 }
 
-/** 根据文件扩展名推断图片 MIME 类型 */
+/** 根据文件扩展名推断图片 MIME 类型（SVG 已移除，防止 XSS） */
 private fun guessImageMimeType(fileName: String): String = when {
     fileName.endsWith(".png", ignoreCase = true) -> "image/png"
     fileName.endsWith(".gif", ignoreCase = true) -> "image/gif"
     fileName.endsWith(".webp", ignoreCase = true) -> "image/webp"
     fileName.endsWith(".bmp", ignoreCase = true) -> "image/bmp"
-    fileName.endsWith(".svg", ignoreCase = true) -> "image/svg+xml"
     else -> "image/jpeg"
 }

@@ -182,17 +182,24 @@ class FtpSyncProvider @Inject constructor(
 
     private fun createFtpClient(config: CloudSyncConfig): FTPClient {
         val client = if (config.serviceType == CloudSyncServiceType.FTPS) {
-            FTPSClient(true)
+            // 使用显式 TLS (FTPES)：先以明文连接标准端口，再通过 AUTH TLS 升级为加密连接。
+            // 这比隐式 TLS (FTPSClient(true), 端口 990) 兼容性更好，是现代 FTPS 服务器的默认模式。
+            FTPSClient(false)
         } else {
+            // 明文 FTP：凭据和数据均以明文传输，存在被窃听风险
+            Timber.tag("CloudSync").w("使用明文 FTP 连接 %s:%d，凭据将以明文传输，建议改用 FTPS 或 SFTP",
+                config.serverUrl, if (config.port != 0) config.port else FTP_DEFAULT_PORT)
             FTPClient()
         }
         val port = if (config.port != 0) config.port else FTP_DEFAULT_PORT
         Timber.tag("CloudSync").d("FTP 连接: ${config.serverUrl}:$port (${config.serviceType.displayName})")
         client.connect(config.serverUrl, port)
         if (config.serviceType == CloudSyncServiceType.FTPS) {
+            // 显式 TLS 模式下，FTPSClient 会在 connect() 后自动发送 AUTH TLS 命令。
+            // 此处配置数据通道保护：PBSZ=0 (无需填充), PROT=P (数据通道加密)
             (client as FTPSClient).execPBSZ(0)
             client.execPROT("P")
-            Timber.tag("CloudSync").d("FTPS 安全设置完成: PBSZ=0, PROT=P")
+            Timber.tag("CloudSync").d("FTPS 安全设置完成: PBSZ=0, PROT=P (显式 TLS)")
         }
         if (!client.login(config.username, config.password)) {
             Timber.tag("CloudSync").e("FTP 登录失败: ${config.serverUrl}:$port, 用户: ${config.username}")
@@ -221,7 +228,13 @@ class FtpSyncProvider @Inject constructor(
             val serverInfo = ftp.systemType ?: "FTP 服务器"
             disconnectFtp(ftp)
             Timber.tag("CloudSync").i("FTP 连接测试成功: ${config.serverUrl}")
-            return ConnectionTestResult(true, "连接成功", serverInfo)
+            // 明文 FTP 连接成功时，在返回消息中附加安全警告，提示用户凭据以明文传输
+            val message = if (config.serviceType == CloudSyncServiceType.FTP) {
+                "连接成功（警告：明文 FTP，凭据未加密，建议改用 FTPS/SFTP）"
+            } else {
+                "连接成功"
+            }
+            return ConnectionTestResult(true, message, serverInfo)
         } catch (e: Exception) {
             Timber.tag("CloudSync").e(e, "FTP 连接测试失败: ${config.serverUrl}")
             return ConnectionTestResult(false, "FTP 连接失败: ${e.message}")

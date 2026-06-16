@@ -1,6 +1,8 @@
 package com.mdcito.app.data.sync
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -44,6 +46,9 @@ class GoogleDriveSyncProvider @Inject constructor(
 
     /** Cache: path -> Google Drive file ID */
     private val folderIdCache = mutableMapOf<String, String>()
+
+    /** Token 刷新互斥锁，防止并发刷新导致 refresh_token 轮换竞态 */
+    private val tokenRefreshMutex = Mutex()
 
     // ======================== OAuth2 / PKCE ========================
 
@@ -138,8 +143,20 @@ class GoogleDriveSyncProvider @Inject constructor(
 
     override suspend fun ensureValidToken(config: CloudSyncConfig): CloudSyncConfig {
         if (config.accessToken.isBlank()) return config
+        // 快速路径：令牌仍有效，无需刷新
         if (System.currentTimeMillis() < config.tokenExpiryTime - 60_000) return config
 
+        // 串行化令牌刷新，防止并发刷新导致 refresh_token 轮换竞态
+        return tokenRefreshMutex.withLock {
+            // 二次检查：在等待锁期间，其他协程可能已完成刷新，此时 config 中的旧令牌已过期，
+            // 但我们无法读取最新持久化的令牌（config 是调用方传入的快照）。
+            // 因此这里仍按原 config 判断，若已被刷新则本次刷新会失败并抛出异常，由调用方处理。
+            // 关键收益：避免多个协程同时发起刷新请求，导致后发的请求使用已被轮换失效的 refresh_token。
+            refreshGoogleDriveToken(config)
+        }
+    }
+
+    private suspend fun refreshGoogleDriveToken(config: CloudSyncConfig): CloudSyncConfig {
         Timber.tag("CloudSync").i("GoogleDrive: 刷新访问令牌")
 
         return withContext(Dispatchers.IO) {

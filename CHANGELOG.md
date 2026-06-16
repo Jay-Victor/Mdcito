@@ -7,6 +7,59 @@
 
 ---
 
+## [1.1.0] - 2026-06-17
+
+### Security
+
+#### Markdown 渲染与预览
+- 修复 Markdown 渲染器未启用 HTML 转义的 XSS 漏洞：为 commonmarkRenderer 和 gfmRenderer 添加 `.escapeHtml(true)`，并将 `body.innerHTML.replace` 替换为 TreeWalker 遍历文本节点的方式，避免二次 HTML 解析导致 XSS
+- 修复 WebView 任意文件读取漏洞：关闭 MarkdownPreview 和 PdfExporter 中 WebView 的 `allowFileAccess` 和 `allowContentAccess`，添加路径规范化校验（`canonicalPath.startsWith`）和 content:// authority 白名单（仅允许本应用 FileProvider 和系统媒体 Provider）
+- 修复锚点跳转 JS 注入：使用 `JSON.stringify` 编码锚点参数
+- 移除 SVG MIME 类型支持以缩小攻击面
+
+#### OAuth 与 Deep Link
+- 修复 OAuth Deep Link state 参数未校验的 CSRF 漏洞：在 Route.createRoute 中对 code 和 state 使用 `URLEncoder.encode`，在 MainActivity.handleDeepLink 中添加 code 格式校验（长度 ≤512，字符集限制）
+
+#### 云同步
+- 修复云同步下载路径遍历漏洞：在 CloudSyncManager 阶段2添加 `..` 路径检查和 canonical path 二次校验，在 listRemoteFilesRecursive 中跳过包含 `..` 的远端条目
+- 修复 OAuth Token 刷新竞态：在 GoogleDriveSyncProvider 和 OneDriveSyncProvider 中添加 `tokenRefreshMutex` 串行化令牌刷新，防止并发刷新导致 refresh_token 轮换竞态
+- 修复 testConnection 未回写刷新后令牌的问题：显式调用 ensureValidToken 并将刷新后的令牌回写到持久化存储
+
+#### OTA 更新
+- 修复 APK 下载路径遍历与完整性校验缺失：添加 `sanitizeFileName` 剥离路径分隔符和 `..`，添加 canonical path 二次校验，新增 `expectedSha256` 参数和 `computeSha256` 实现 SHA-256 完整性校验
+
+#### 图床
+- 修复图床 SSRF 漏洞：添加 `validateUploadUrl` 校验上传 URL，禁止指向本地主机、内网地址、链路本地地址和云元数据服务（169.254.169.254、metadata.google.internal）
+
+#### 图片处理
+- 修复 ImageProcessor OOM：使用 `inJustDecodeBounds` + `inSampleSize` 降采样，添加 MAX_IMAGE_BYTES (20MB) 和 MAX_DECODE_PIXELS (4096×4096) 限制，中间 Bitmap 调用 `recycle()`
+- 修复 EXIF 隐私信息泄露：新增 `stripExifFromBytes` 函数剥离 EXIF 隐私信息
+- 添加 ALLOWED_EXTENSIONS 图片格式白名单校验
+- 移除 SVG 格式支持
+
+#### 敏感数据存储
+- 图床自定义请求头（imageHostCustomHeaders）改用 EncryptedSharedPreferences 加密存储，避免 Authorization 等凭据明文泄露
+
+### Fixed
+
+#### 编辑器
+- 修复 EditorViewModel 数据丢失与竞态条件：使用 `saveMutex.withLock` 序列化保存操作，`onCleared()` 中使用 `runBlocking + NonCancellable` 完成最后一次保存，`syncContentToDiskFile` 和 `readContentFromPath` 切换到 `Dispatchers.IO` 避免主线程 ANR
+
+#### 云同步冲突
+- 修复 REMOTE_WINS / LOCAL_WINS 冲突逻辑错误：Phase 1 中 REMOTE_WINS 在本地较新时应下载远端覆盖本地（原为跳过）；Phase 2 中 LOCAL_WINS 在远端较新时应上传本地覆盖远端（原为跳过）
+
+### Changed
+
+#### FTP 同步
+- FTPS 改用显式 TLS (FTPES) 替代隐式 TLS，兼容性更好（现代 FTPS 服务器默认模式）
+- 明文 FTP 连接时在日志和 testConnection 返回消息中附加安全警告，提示用户凭据未加密
+
+#### OneDrive 同步
+- 为 OkHttpClient 添加显式超时配置（connect 30s / read 60s / write 120s），避免网络异常时连接挂起
+- 修复 deleteFile 和 createDirectory 中 Response body 未关闭导致连接泄漏的问题，改用 `use{}` 块确保资源释放
+
+---
+
 ## [1.0.8] - 2026-06-17
 
 ### Changed
@@ -212,6 +265,7 @@
 
 ---
 
+[1.1.0]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.1.0
 [1.0.8]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.8
 [1.0.7]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.7
 [1.0.6]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.6

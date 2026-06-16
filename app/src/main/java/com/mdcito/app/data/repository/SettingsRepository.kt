@@ -74,7 +74,9 @@ class SettingsRepository @Inject constructor(
     val imageHostTencentDomain: Flow<String> = settingsDataStore.imageHostTencentDomain
     val imageHostCustomUrl: Flow<String> = settingsDataStore.imageHostCustomUrl
     val imageHostCustomMethod: Flow<String> = settingsDataStore.imageHostCustomMethod
-    val imageHostCustomHeaders: Flow<String> = settingsDataStore.imageHostCustomHeaders
+    // 自定义图床请求头可能包含 Authorization 等敏感凭据，使用加密存储
+    private val _imageHostCustomHeaders = MutableStateFlow(secureSettingsDataStore.getImageHostCustomHeaders())
+    val imageHostCustomHeaders: StateFlow<String> = _imageHostCustomHeaders.asStateFlow()
     val imageHostCustomResponse: Flow<String> = settingsDataStore.imageHostCustomResponse
     val imageCompress: Flow<Boolean> = settingsDataStore.imageCompress
     val imageCompressQuality: Flow<Int> = settingsDataStore.imageCompressQuality
@@ -202,7 +204,11 @@ class SettingsRepository @Inject constructor(
     suspend fun setImageHostTencentDomain(domain: String) = settingsDataStore.setImageHostTencentDomain(domain)
     suspend fun setImageHostCustomUrl(url: String) = settingsDataStore.setImageHostCustomUrl(url)
     suspend fun setImageHostCustomMethod(method: String) = settingsDataStore.setImageHostCustomMethod(method)
-    suspend fun setImageHostCustomHeaders(headers: String) = settingsDataStore.setImageHostCustomHeaders(headers)
+    fun setImageHostCustomHeaders(headers: String) {
+        Timber.tag("SettingsRepo").i("图床自定义请求头已更新（加密存储）")
+        secureSettingsDataStore.saveImageHostCustomHeaders(headers)
+        _imageHostCustomHeaders.value = headers
+    }
     suspend fun setImageHostCustomResponse(rule: String) = settingsDataStore.setImageHostCustomResponse(rule)
     suspend fun setImageCompress(enabled: Boolean) = settingsDataStore.setImageCompress(enabled)
     suspend fun setImageCompressQuality(quality: Int) = settingsDataStore.setImageCompressQuality(quality)

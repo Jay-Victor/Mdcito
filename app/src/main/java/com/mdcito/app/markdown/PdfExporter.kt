@@ -74,7 +74,9 @@ class PdfExporter(private val context: Context) {
                 wv.settings.javaScriptEnabled = true
                 wv.settings.loadWithOverviewMode = true
                 wv.settings.useWideViewPort = true
-                wv.settings.allowFileAccess = true
+                // 关闭文件访问，防止 XSS 通过 file:// 读取应用沙箱文件
+                wv.settings.allowFileAccess = false
+                wv.settings.allowContentAccess = false
 
                 // 超时保护：30 秒内未完成则取消导出
                 val handler = Handler(Looper.getMainLooper())
@@ -134,19 +136,34 @@ class PdfExporter(private val context: Context) {
                         val url = request?.url?.toString()
                             ?: return super.shouldInterceptRequest(view, request)
 
-                        // 处理本地文件路径的图片（应用内部存储，file:// URI）
-                        if (url.startsWith("file:///data/")) {
-                            try {
-                                val path = android.net.Uri.parse(url).path
-                                    ?: return super.shouldInterceptRequest(view, request)
-                                val file = File(path)
+                        // 仅允许应用私有图片目录下的本地文件，规范化路径后做归属校验，防止路径遍历
+                        val allowedImageDir = File(context.filesDir, "images").canonicalPath
+                        val allowedCacheImageDir = File(context.cacheDir, "images").canonicalPath
+
+                        fun tryServeFile(file: File): WebResourceResponse? {
+                            return try {
+                                val canonical = file.canonicalPath
+                                if (!canonical.startsWith(allowedImageDir) &&
+                                    !canonical.startsWith(allowedCacheImageDir)) {
+                                    return null
+                                }
                                 if (file.exists()) {
-                                    return WebResourceResponse(
+                                    WebResourceResponse(
                                         guessImageMimeType(file.name),
                                         "UTF-8",
                                         file.inputStream()
                                     )
-                                }
+                                } else null
+                            } catch (_: Exception) { null }
+                        }
+
+                        // 处理本地文件路径的图片（应用内部存储，file:// URI）
+                        if (url.startsWith("file:///")) {
+                            try {
+                                val path = android.net.Uri.parse(url).path
+                                    ?: return super.shouldInterceptRequest(view, request)
+                                return tryServeFile(File(path))
+                                    ?: super.shouldInterceptRequest(view, request)
                             } catch (e: Exception) {
                                 Timber.tag("PdfExport").w(e, "拦截file://资源异常: %s", url)
                             }
@@ -162,23 +179,24 @@ class PdfExporter(private val context: Context) {
                                 } else {
                                     url
                                 }
-                                val file = File(filePath)
-                                if (file.exists()) {
-                                    return WebResourceResponse(
-                                        guessImageMimeType(file.name),
-                                        "UTF-8",
-                                        file.inputStream()
-                                    )
-                                }
+                                return tryServeFile(File(filePath))
+                                    ?: super.shouldInterceptRequest(view, request)
                             } catch (e: Exception) {
                                 Timber.tag("PdfExport").w(e, "拦截旧路径资源异常: %s", url)
                             }
                         }
 
                         // 处理 content:// URI 的图片（Photo Picker 等来源）
+                        // 仅允许本应用 FileProvider 与系统媒体 Provider
                         if (url.startsWith("content://")) {
                             try {
                                 val uri = android.net.Uri.parse(url)
+                                val authority = uri.authority
+                                    ?: return super.shouldInterceptRequest(view, request)
+                                val isAllowedAuthority = authority == "${context.packageName}.fileprovider" ||
+                                    authority == "media" ||
+                                    authority == "com.android.providers.media.documents"
+                                if (!isAllowedAuthority) return super.shouldInterceptRequest(view, request)
                                 val inputStream = context.contentResolver.openInputStream(uri)
                                 if (inputStream != null) {
                                     // 直接从 URI 路径推断 MIME 类型，避免 getType() 的 IPC 调用

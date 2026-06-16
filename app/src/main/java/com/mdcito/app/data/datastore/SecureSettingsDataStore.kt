@@ -260,6 +260,7 @@ class SecureSettingsDataStore @Inject constructor(
         const val ALIYUN_AK_SECRET = "image_host_aliyun_ak_secret"
         const val TENCENT_SECRET_ID = "image_host_tencent_secret_id"
         const val TENCENT_SECRET_KEY = "image_host_tencent_secret_key"
+        const val CUSTOM_HEADERS = "image_host_custom_headers"
     }
 
     fun saveImageHostGithubToken(token: String) {
@@ -292,6 +293,15 @@ class SecureSettingsDataStore @Inject constructor(
     }
     fun getImageHostTencentSecretKey(): String = encryptedPrefs.getString(ImageHostLegacyKeys.TENCENT_SECRET_KEY, "") ?: ""
 
+    /**
+     * 自定义图床请求头（JSON 格式，可能包含 Authorization 等敏感凭据）
+     * 加密存储以防止凭据泄露。
+     */
+    fun saveImageHostCustomHeaders(headers: String) {
+        encryptedPrefs.edit().putString(ImageHostLegacyKeys.CUSTOM_HEADERS, headers).commit()
+    }
+    fun getImageHostCustomHeaders(): String = encryptedPrefs.getString(ImageHostLegacyKeys.CUSTOM_HEADERS, "") ?: ""
+
     fun clearImageHostLegacySecrets() {
         encryptedPrefs.edit().apply {
             remove(ImageHostLegacyKeys.GITHUB_TOKEN)
@@ -300,6 +310,7 @@ class SecureSettingsDataStore @Inject constructor(
             remove(ImageHostLegacyKeys.ALIYUN_AK_SECRET)
             remove(ImageHostLegacyKeys.TENCENT_SECRET_ID)
             remove(ImageHostLegacyKeys.TENCENT_SECRET_KEY)
+            remove(ImageHostLegacyKeys.CUSTOM_HEADERS)
         }.apply()
     }
 }

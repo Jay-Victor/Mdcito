@@ -808,6 +808,11 @@ class ImageUploadService @Inject constructor(
             withContext(Dispatchers.IO) {
                 try {
                     val url = config["url"] ?: return@withContext UploadResult(success = false, message = context.getString(R.string.upload_custom_no_url))
+                    // SSRF 防护：校验 URL 协议与目标主机，拒绝内网/回环/链路本地地址
+                    val ssrfError = validateUploadUrl(url)
+                    if (ssrfError != null) {
+                        return@withContext UploadResult(success = false, message = ssrfError)
+                    }
                     val method = config["method"]?.uppercase() ?: "POST"
                     val headersJson = config["headers"] ?: "{}"
                     val responseRule = config["response"] ?: "$.data.url"
@@ -881,12 +886,19 @@ class ImageUploadService @Inject constructor(
 
         override suspend fun testConnection(config: Map<String, String>): TestResult {
             val url = config["url"]
-            return if (url.isNullOrBlank()) {
-                TestResult(success = false, message = context.getString(R.string.upload_custom_no_url))
-            } else if (!url.startsWith("http")) {
-                TestResult(success = false, message = context.getString(R.string.upload_custom_url_must_http))
-            } else {
-                TestResult(success = true, message = context.getString(R.string.upload_custom_config_valid))
+            return when {
+                url.isNullOrBlank() -> TestResult(success = false, message = context.getString(R.string.upload_custom_no_url))
+                !url.startsWith("https://") && !url.startsWith("http://") ->
+                    TestResult(success = false, message = context.getString(R.string.upload_custom_url_must_http))
+                else -> {
+                    // SSRF 防护：校验目标主机
+                    val ssrfError = validateUploadUrl(url)
+                    if (ssrfError != null) {
+                        TestResult(success = false, message = ssrfError)
+                    } else {
+                        TestResult(success = true, message = context.getString(R.string.upload_custom_config_valid))
+                    }
+                }
             }
         }
 
@@ -921,6 +933,41 @@ class ImageUploadService @Inject constructor(
     // ── 通用工具方法 ──
 
     /**
+     * 校验上传 URL，防止 SSRF 攻击。
+     * 拒绝指向回环、链路本地、私网、云元数据等内部地址的 URL。
+     * @return 错误消息（拒绝时），null 表示通过
+     */
+    private fun validateUploadUrl(url: String): String? {
+        return try {
+            val parsed = java.net.URI(url)
+            val host = parsed.host ?: return "URL 缺少主机名"
+            // 拒绝 localhost 与常见回环名
+            val lowerHost = host.lowercase()
+            if (lowerHost == "localhost" || lowerHost == "ip6-localhost" || lowerHost == "ip6-loopback") {
+                return "不允许指向本地主机"
+            }
+            // 解析为 IP 地址进行网段判断
+            val addr = java.net.InetAddress.getByName(host)
+            if (addr.isLoopbackAddress ||
+                addr.isLinkLocalAddress ||
+                addr.isSiteLocalAddress ||
+                addr.isAnyLocalAddress ||
+                addr.isMulticastAddress
+            ) {
+                return "不允许指向内网/本地地址"
+            }
+            // 拒绝云元数据服务地址（169.254.169.254 已被 isLinkLocalAddress 覆盖，
+            // 但显式判断以防御未来 JDK 行为变化）
+            if (host == "169.254.169.254" || host == "metadata.google.internal") {
+                return "不允许指向云元数据服务"
+            }
+            null
+        } catch (e: Exception) {
+            "URL 解析失败：${e.message}"
+        }
+    }
+
+    /**
      * 生成 GMT 格式的日期字符串（用于 HTTP 请求头）
      */
     private fun gmtDateString(): String {
@@ -931,6 +978,7 @@ class ImageUploadService @Inject constructor(
 
     /**
      * 根据文件扩展名猜测 Content-Type
+     * 注意：SVG 已移除，因其可内嵌 <script> 导致存储型 XSS
      */
     private fun guessContentType(fileName: String): String {
         val ext = fileName.substringAfterLast('.', "").lowercase()
@@ -939,7 +987,6 @@ class ImageUploadService @Inject constructor(
             "gif" -> "image/gif"
             "webp" -> "image/webp"
             "bmp" -> "image/bmp"
-            "svg" -> "image/svg+xml"
             else -> "image/jpeg"
         }
     }

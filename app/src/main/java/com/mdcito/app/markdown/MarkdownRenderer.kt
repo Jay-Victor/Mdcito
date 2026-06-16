@@ -32,8 +32,12 @@ object MarkdownRenderer {
         Parser.builder().build()
     }
 
+    // 开启 escapeHtml 以剥离 Markdown 中的原始 HTML 块/内联 HTML，
+    // 避免 WebView 中执行任意脚本（XSS）。所有 HTML 仅来自 commonmark 自身渲染。
     private val commonmarkRenderer: HtmlRenderer by lazy {
-        HtmlRenderer.builder().build()
+        HtmlRenderer.builder()
+            .escapeHtml(true)
+            .build()
     }
 
     // ── GFM 解析器（含 GFM 扩展） ──
@@ -53,6 +57,7 @@ object MarkdownRenderer {
     private val gfmRenderer: HtmlRenderer by lazy {
         HtmlRenderer.builder()
             .extensions(gfmExtensions + HeadingAnchorExtension.builder().build())
+            .escapeHtml(true)
             .build()
     }
 
@@ -204,9 +209,31 @@ object MarkdownRenderer {
                         hljs.highlightAll();
                     }
                     // 删除线兜底：将未被解析的 ~~text~~ 转为 <del> 标签
+                    // 使用 textContent 而非 innerHTML，避免二次 HTML 解析导致 XSS
                     var body = document.querySelector('.markdown-body');
                     if (body) {
-                        body.innerHTML = body.innerHTML.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+                        var walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, null, false);
+                        var textNodes = [];
+                        var node;
+                        while ((node = walker.nextNode())) textNodes.push(node);
+                        textNodes.forEach(function(textNode) {
+                            var text = textNode.nodeValue;
+                            if (text.indexOf('~~') === -1) return;
+                            var parent = textNode.parentNode;
+                            if (!parent || parent.tagName === 'CODE' || parent.tagName === 'PRE') return;
+                            var replaced = text.replace(/~~([^~]+)~~/g, function(match, p1) {
+                                var del = document.createElement('del');
+                                del.textContent = p1;
+                                return del.outerHTML;
+                            });
+                            if (replaced !== text) {
+                                var span = document.createElement('span');
+                                span.innerHTML = replaced;
+                                parent.replaceChild(span, textNode);
+                                while (span.firstChild) parent.insertBefore(span.firstChild, span);
+                                parent.removeChild(span);
+                            }
+                        });
                     }
                     // 表格包裹：将 <table> 包裹在 <div class="table-wrapper"> 中，实现横向滚动
                     document.querySelectorAll('.markdown-body table').forEach(function(table) {

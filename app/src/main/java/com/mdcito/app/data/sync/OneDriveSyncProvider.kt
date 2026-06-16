@@ -1,6 +1,8 @@
 package com.mdcito.app.data.sync
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType
@@ -12,6 +14,7 @@ import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Base64
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import timber.log.Timber
@@ -33,7 +36,15 @@ class OneDriveSyncProvider @Inject constructor(
 
     override val serviceType: CloudSyncServiceType = CloudSyncServiceType.ONEDRIVE
 
-    private val httpClient = OkHttpClient()
+    // 配置显式超时，避免网络异常时连接挂起导致 ANR 或资源泄漏
+    private val httpClient = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(120, TimeUnit.SECONDS)
+        .build()
+
+    /** Token 刷新互斥锁，防止并发刷新导致 refresh_token 轮换竞态 */
+    private val tokenRefreshMutex = Mutex()
 
     /**
      * 最近一次上传后远程文件的实际修改时间。
@@ -127,8 +138,16 @@ class OneDriveSyncProvider @Inject constructor(
 
     override suspend fun ensureValidToken(config: CloudSyncConfig): CloudSyncConfig {
         if (config.accessToken.isBlank()) return config
+        // 快速路径：令牌仍有效，无需刷新
         if (config.tokenExpiryTime > System.currentTimeMillis() + 60_000) return config
 
+        // 串行化令牌刷新，防止并发刷新导致 refresh_token 轮换竞态
+        return tokenRefreshMutex.withLock {
+            refreshOneDriveToken(config)
+        }
+    }
+
+    private suspend fun refreshOneDriveToken(config: CloudSyncConfig): CloudSyncConfig {
         Timber.tag("CloudSync").i("OneDrive: 刷新访问令牌")
 
         return withContext(Dispatchers.IO) {
@@ -422,13 +441,15 @@ class OneDriveSyncProvider @Inject constructor(
                 .delete()
                 .build()
 
-            val response = httpClient.newCall(request).execute()
-            if (!response.isSuccessful) {
-                Timber.tag("CloudSync").w("OneDrive: 删除文件失败，HTTP %d, path=%s", response.code, remotePath)
-            } else {
-                Timber.tag("CloudSync").i("OneDrive: 删除文件：$remotePath")
+            // 使用 use{} 确保 Response body 被关闭，防止连接泄漏
+            httpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Timber.tag("CloudSync").w("OneDrive: 删除文件失败，HTTP %d, path=%s", response.code, remotePath)
+                } else {
+                    Timber.tag("CloudSync").i("OneDrive: 删除文件：$remotePath")
+                }
+                response.isSuccessful
             }
-            response.isSuccessful
         } catch (e: Exception) {
             Timber.tag("CloudSync").e(e, "OneDrive: 删除文件失败：$remotePath")
             throw RuntimeException("删除文件失败: ${e.message}", e)
@@ -464,13 +485,15 @@ class OneDriveSyncProvider @Inject constructor(
                 .post(requestBody)
                 .build()
 
-            val response = httpClient.newCall(request).execute()
-            if (!response.isSuccessful) {
-                Timber.tag("CloudSync").w("OneDrive: 创建目录失败，HTTP %d, path=%s", response.code, remotePath)
-            } else {
-                Timber.tag("CloudSync").i("OneDrive: 创建目录成功：$remotePath")
+            // 使用 use{} 确保 Response body 被关闭，防止连接泄漏
+            httpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Timber.tag("CloudSync").w("OneDrive: 创建目录失败，HTTP %d, path=%s", response.code, remotePath)
+                } else {
+                    Timber.tag("CloudSync").i("OneDrive: 创建目录成功：$remotePath")
+                }
+                response.isSuccessful
             }
-            response.isSuccessful
         } catch (e: Exception) {
             Timber.tag("CloudSync").e(e, "OneDrive: 创建目录失败：$remotePath")
             throw RuntimeException("创建目录失败: ${e.message}", e)

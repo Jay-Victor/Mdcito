@@ -71,10 +71,12 @@ class ApkDownloader @Inject constructor(
     /**
      * 下载 APK 文件，支持断点续传和进度跟踪
      * 如果目标文件已部分存在，通过 HTTP Range 头从中断处继续
+     * @param expectedSha256 可选的 SHA-256 摘要（十六进制），下载完成后校验完整性
      */
     suspend fun downloadApk(
         url: String,
-        fileName: String
+        fileName: String,
+        expectedSha256: String = "",
     ): String? = withContext(Dispatchers.IO) {
         isCancelled = false
 
@@ -85,12 +87,29 @@ class ApkDownloader @Inject constructor(
             return@withContext null
         }
 
+        // 文件名安全过滤：仅保留文件名部分，剥离任何路径分隔符与 ..
+        val safeFileName = sanitizeFileName(fileName)
+        if (safeFileName.isBlank()) {
+            Timber.tag("ApkDownloader").e("下载文件名无效: $fileName")
+            _downloadState.value = DownloadState.Error("文件名无效")
+            return@withContext null
+        }
+
         val downloadDir = File(
             context.externalCacheDir ?: context.cacheDir,
             "updates"
         )
         downloadDir.mkdirs()
-        val targetFile = File(downloadDir, fileName)
+        val targetFile = File(downloadDir, safeFileName)
+        // 二次校验：确保规范化后的路径仍在 downloadDir 内
+        val canonicalDownloadDir = downloadDir.canonicalPath
+        val canonicalTarget = targetFile.canonicalPath
+        if (!canonicalTarget.startsWith(canonicalDownloadDir + File.separator) &&
+            canonicalTarget != canonicalDownloadDir) {
+            Timber.tag("ApkDownloader").e("下载文件名逃逸目标目录: %s -> %s", fileName, canonicalTarget)
+            _downloadState.value = DownloadState.Error("文件名非法")
+            return@withContext null
+        }
 
         // 如果之前的状态是 Paused，文件保留了部分数据，断点续传
         val resumeFrom: Long = if (targetFile.exists() && targetFile.length() > 0) {
@@ -194,6 +213,17 @@ class ApkDownloader @Inject constructor(
             }
 
             if (targetFile.exists() && targetFile.length() > 0) {
+                // 完整性校验：如果提供了 SHA-256 摘要，校验下载文件
+                if (expectedSha256.isNotBlank()) {
+                    val actualSha256 = computeSha256(targetFile)
+                    if (!actualSha256.equals(expectedSha256, ignoreCase = true)) {
+                        Timber.tag("ApkDownloader").e("SHA-256 校验失败：期望=%s，实际=%s", expectedSha256, actualSha256)
+                        targetFile.delete()
+                        _downloadState.value = DownloadState.Error("文件完整性校验失败，可能已被篡改")
+                        return@withContext null
+                    }
+                    Timber.tag("ApkDownloader").i("SHA-256 校验通过")
+                }
                 _downloadState.value = DownloadState.Completed(targetFile.absolutePath)
                 Timber.tag("ApkDownloader").i("下载完成: ${targetFile.absolutePath}")
                 targetFile.absolutePath
@@ -210,5 +240,32 @@ class ApkDownloader @Inject constructor(
             _downloadState.value = DownloadState.Error(e.message ?: "下载失败")
             null
         }
+    }
+
+    /**
+     * 过滤文件名：仅保留文件名部分，剥离路径分隔符与 ..
+     */
+    private fun sanitizeFileName(fileName: String): String {
+        // 取最后一段路径（兼容 / 和 \）
+        val nameOnly = fileName.substringAfterLast('/').substringAfterLast('\\')
+        // 拒绝 . 或 .. 或空
+        if (nameOnly.isBlank() || nameOnly == "." || nameOnly == "..") return ""
+        // 进一步剥离残留的 .. 片段
+        return nameOnly.replace("..", "").trim()
+    }
+
+    /**
+     * 计算文件 SHA-256 摘要（十六进制小写）
+     */
+    private fun computeSha256(file: File): String {
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+        file.inputStream().use { input ->
+            val buffer = ByteArray(8192)
+            var bytesRead: Int
+            while (input.read(buffer).also { bytesRead = it } != -1) {
+                digest.update(buffer, 0, bytesRead)
+            }
+        }
+        return digest.digest().joinToString("") { "%02x".format(it) }
     }
 }

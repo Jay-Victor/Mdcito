@@ -95,11 +95,22 @@ class CloudSyncManager @Inject constructor(
 
     /**
      * 测试连接
+     * 注意：testConnection 内部会调用 ensureValidToken，可能刷新令牌。
+     * 此处显式调用 ensureValidToken 并将刷新后的令牌回写到持久化存储，
+     * 避免刷新后的令牌丢失导致后续操作使用已失效的旧令牌。
      */
     suspend fun testConnection(config: CloudSyncConfig): ConnectionTestResult {
         return try {
             val provider = getProvider(config.serviceType)
-            provider.testConnection(config)
+            // 先刷新令牌并回写，确保后续 testConnection 内部不会再次刷新（避免重复刷新）
+            val refreshedConfig = provider.ensureValidToken(config)
+            if (refreshedConfig.accessToken != config.accessToken ||
+                refreshedConfig.refreshToken != config.refreshToken
+            ) {
+                saveConfig(refreshedConfig)
+                Timber.tag("CloudSync").i("testConnection: 令牌已刷新并回写持久化存储")
+            }
+            provider.testConnection(refreshedConfig)
         } catch (e: Exception) {
             Timber.tag("CloudSync").e(e, "连接测试失败: ${config.serviceType.displayName} ${config.serverUrl}")
             ConnectionTestResult(false, e.message ?: "连接测试失败")
@@ -234,7 +245,16 @@ class CloudSyncManager @Inject constructor(
                                 syncLocalTimestampAfterUpload(provider, localFile)
                             }
                         }
-                        ConflictResolution.REMOTE_WINS -> { skippedCount++ }
+                        ConflictResolution.REMOTE_WINS -> {
+                            // 远端优先：即使本地较新，也以下载远端覆盖本地为准
+                            val content = provider.downloadFile(updatedConfig, remoteFile.path)
+                            if (content != null) {
+                                localFile.writeBytes(content)
+                                // 保留远程文件的修改时间，避免下次同步时因时间戳不一致导致重复操作
+                                localFile.setLastModified(remoteFile.lastModified)
+                                downloadedCount++
+                            }
+                        }
                         ConflictResolution.MANUAL -> {
                             conflictCount++
                             conflictFiles.add(ConflictFile(
@@ -267,9 +287,24 @@ class CloudSyncManager @Inject constructor(
                 } else {
                     remoteFile.name
                 }
+                // 安全检查：拒绝包含路径遍历（..）的远端路径，防止恶意服务器逃逸 localDir
+                if (relativePath.contains("..") || relativePath.startsWith("/")) {
+                    Timber.tag("CloudSync").w("跳过可疑远端路径（疑似路径遍历）: %s", remoteFile.path)
+                    processedCount++
+                    continue
+                }
                 remoteRelativePaths.add(relativePath)
 
                 val localFile = File(localDir, relativePath)
+                // 二次校验：确保规范化后的路径仍在 localDir 内
+                val canonicalLocalDir = localDir.canonicalPath
+                val canonicalLocalFile = localFile.canonicalPath
+                if (!canonicalLocalFile.startsWith(canonicalLocalDir + File.separator) &&
+                    canonicalLocalFile != canonicalLocalDir) {
+                    Timber.tag("CloudSync").w("跳过逃逸本地目录的远端路径: %s -> %s", remoteFile.path, canonicalLocalFile)
+                    processedCount++
+                    continue
+                }
                 if (!localFile.exists()) {
                     // 本地不存在
                     val wasSyncedBefore = lastSyncedSet.contains(relativePath)
@@ -301,7 +336,15 @@ class CloudSyncManager @Inject constructor(
                                 downloadedCount++
                             }
                         }
-                        ConflictResolution.LOCAL_WINS -> { skippedCount++ }
+                        ConflictResolution.LOCAL_WINS -> {
+                            // 本地优先：即使远端较新，也以上传本地覆盖远端为准
+                            val content = localFile.readBytes()
+                            if (provider.uploadFile(updatedConfig, remoteFile.path, content, localFile.lastModified())) {
+                                uploadedCount++
+                                // 上传成功后同步本地文件时间戳，确保下次同步时两端时间戳一致
+                                syncLocalTimestampAfterUpload(provider, localFile)
+                            }
+                        }
                         ConflictResolution.MANUAL -> {
                             conflictCount++
                             conflictFiles.add(ConflictFile(
@@ -404,6 +447,11 @@ class CloudSyncManager @Inject constructor(
             val currentDir = dirsToProcess.removeAt(0)
             val files = provider.listFiles(config, currentDir)
             for (file in files) {
+                // 跳过包含路径遍历符的条目，防止恶意服务器引导遍历到上级目录
+                if (file.path.contains("..") || file.name.contains("..")) {
+                    Timber.tag("CloudSync").w("跳过可疑远端条目（疑似路径遍历）: %s", file.path)
+                    continue
+                }
                 if (file.isDirectory) {
                     dirsToProcess.add(file.path)
                 } else {

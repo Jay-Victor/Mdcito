@@ -56,6 +56,7 @@ data class GiteeAsset(
 
 /**
  * 统一更新信息模型
+ * @param sha256 可选的 APK SHA-256 摘要（十六进制），用于下载后完整性校验
  */
 data class UpdateInfo(
     val versionName: String,
@@ -66,7 +67,8 @@ data class UpdateInfo(
     val downloadSize: Long,
     val fileName: String,
     val source: UpdateSource,
-    val mirrorUrls: List<MirrorUrl> = emptyList()
+    val mirrorUrls: List<MirrorUrl> = emptyList(),
+    val sha256: String = "",
 )
 
 /**

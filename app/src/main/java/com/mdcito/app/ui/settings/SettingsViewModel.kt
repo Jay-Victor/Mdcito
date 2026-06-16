@@ -321,8 +321,8 @@ class SettingsViewModel @Inject constructor(
     val imageHostCustomMethod: StateFlow<String> = settingsRepository.imageHostCustomMethod
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "POST")
 
+    // 直接使用 Repository 暴露的 StateFlow（已从加密存储读取）
     val imageHostCustomHeaders: StateFlow<String> = settingsRepository.imageHostCustomHeaders
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 
     val imageHostCustomResponse: StateFlow<String> = settingsRepository.imageHostCustomResponse
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
@@ -662,7 +662,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setImageHostCustomHeaders(headers: String) {
-        viewModelScope.launch { settingsRepository.setImageHostCustomHeaders(headers) }
+        settingsRepository.setImageHostCustomHeaders(headers)
     }
 
     fun setImageHostCustomResponse(rule: String) {
