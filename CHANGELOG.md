@@ -7,6 +7,19 @@
 
 ---
 
+## [1.0.1] - 2026-06-16
+
+### Changed
+
+#### 主题系统
+- 动态主题色预览组件重构：使用实际应用的 `MaterialTheme.colorScheme` 替代独立获取的动态色方案，确保预览颜色与界面完全一致
+- 添加动态色状态指示器：显示"动态色已启用/未启用"状态，带有颜色指示灯
+- 添加颜色对比视图：左侧显示当前 Primary 颜色，右侧显示静态主题色参考，方便用户对比差异
+- 预览组件始终可见：无论是否开启动态色，预览都会显示，让用户能直观看到当前主题色效果
+- 新增字符串资源：`dynamic_color_active`、`dynamic_color_inactive`、`dynamic_color_comparison`
+
+---
+
 ## [1.0.0] - 2026-06-15
 
 ### Added
@@ -96,4 +109,5 @@
 
 ---
 
+[1.0.1]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.0

@@ -141,6 +141,9 @@
     <string name="dynamic_color_seed">种子色</string>
     <string name="dynamic_color_wallpaper_settings">更换壁纸与配色</string>
     <string name="dynamic_color_effect_preview">应用效果预览</string>
+    <string name="dynamic_color_active">动态色已启用</string>
+    <string name="dynamic_color_inactive">动态色未启用</string>
+    <string name="dynamic_color_comparison">颜色对比</string>
 
     <!-- Card Style Settings -->
     <string name="card_style_settings">卡片与导航栏风格</string>

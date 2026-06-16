@@ -40,8 +40,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -180,7 +178,7 @@ fun ThemeSettingsScreen(
             viewModel.setDynamicColor(it)
         }
 
-        DynamicColorPreview(dynamicColor, isDark)
+        DynamicColorPreview(dynamicColor, isDark, themeColorIndex)
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -365,6 +363,7 @@ private fun SchemeOption(
 private fun DynamicColorPreview(
     dynamicColor: Boolean,
     isDark: Boolean,
+    themeColorIndex: Int,
 ) {
     val context = LocalContext.current
     val supportsDynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
@@ -403,14 +402,15 @@ private fun DynamicColorPreview(
         return
     }
 
-    if (!dynamicColor || !supportsDynamicColor) return
+    if (!supportsDynamicColor) return
 
-    // 获取当前动态色方案（使用实际主题模式而非系统暗色模式）
-    val colorScheme = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    // 使用实际应用的 MaterialTheme.colorScheme（而非独立获取）
+    // 这样预览显示的颜色与实际界面完全一致
+    val actualColorScheme = MaterialTheme.colorScheme
 
-    // 提取种子色（从壁纸主色获取）
-    val seedColor = remember(colorScheme) {
-        colorScheme.primary
+    // 获取静态主题色作为对比参考
+    val staticThemeColor = remember(themeColorIndex) {
+        MdcitoColors.ThemeColors.all.getOrElse(themeColorIndex) { MdcitoColors.ThemeColors.all[0] }
     }
 
     Card(
@@ -418,37 +418,130 @@ private fun DynamicColorPreview(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant),
-        border = BorderStroke(0.5.dp, colorScheme.outlineVariant.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = actualColorScheme.surfaceVariant),
+        border = BorderStroke(0.5.dp, actualColorScheme.outlineVariant.copy(alpha = 0.3f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // 标题行：预览标题 + 种子色
+            // 状态指示行
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(
-                    text = stringResource(R.string.dynamic_color_preview),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = colorScheme.onSurfaceVariant,
-                )
-                // 种子色指示器
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // 状态指示器
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (dynamicColor) actualColorScheme.primary
+                                else actualColorScheme.outlineVariant
+                            ),
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (dynamicColor) stringResource(R.string.dynamic_color_active)
+                               else stringResource(R.string.dynamic_color_inactive),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (dynamicColor) actualColorScheme.primary
+                                else actualColorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.W600,
+                    )
+                }
+                // 种子色指示器（动态色开启时显示）
+                if (dynamicColor) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .clip(CircleShape)
+                                .background(actualColorScheme.primary)
+                                .border(1.dp, actualColorScheme.outline.copy(alpha = 0.3f), CircleShape),
+                        )
+                        Text(
+                            text = stringResource(R.string.dynamic_color_seed),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = actualColorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 对比视图：动态色 vs 静态主题色
+            HorizontalDivider(color = actualColorScheme.outlineVariant.copy(alpha = 0.3f))
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = stringResource(R.string.dynamic_color_comparison),
+                style = MaterialTheme.typography.labelMedium,
+                color = actualColorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // 当前应用的颜色（动态色或静态主题色）
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(12.dp)
-                            .clip(CircleShape)
-                            .background(seedColor)
-                            .border(1.dp, colorScheme.outline.copy(alpha = 0.3f), CircleShape),
-                    )
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(actualColorScheme.primary),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = if (dynamicColor) "动态色" else "静态色",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = actualColorScheme.onPrimary,
+                            fontWeight = FontWeight.W600,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.dynamic_color_seed),
+                        text = "Primary",
                         style = MaterialTheme.typography.labelSmall,
-                        color = colorScheme.onSurfaceVariant,
+                        color = actualColorScheme.onSurfaceVariant,
+                    )
+                }
+
+                // 静态主题色参考（始终显示）
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(staticThemeColor)
+                            .alpha(if (dynamicColor) 0.6f else 1f),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = "静态参考",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color.White,
+                            fontWeight = FontWeight.W600,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "主题色",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = actualColorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -456,12 +549,12 @@ private fun DynamicColorPreview(
             Spacer(modifier = Modifier.height(12.dp))
 
             // 实时应用效果预览
-            HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.3f))
+            HorizontalDivider(color = actualColorScheme.outlineVariant.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = stringResource(R.string.dynamic_color_effect_preview),
                 style = MaterialTheme.typography.labelMedium,
-                color = colorScheme.onSurfaceVariant,
+                color = actualColorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -474,42 +567,42 @@ private fun DynamicColorPreview(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(colorScheme.primary)
+                        .background(actualColorScheme.primary)
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "Primary",
                         style = MaterialTheme.typography.labelSmall,
-                        color = colorScheme.onPrimary,
+                        color = actualColorScheme.onPrimary,
                     )
                 }
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(colorScheme.primaryContainer)
+                        .background(actualColorScheme.primaryContainer)
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "Container",
                         style = MaterialTheme.typography.labelSmall,
-                        color = colorScheme.onPrimaryContainer,
+                        color = actualColorScheme.onPrimaryContainer,
                     )
                 }
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(colorScheme.secondaryContainer)
+                        .background(actualColorScheme.secondaryContainer)
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "Secondary",
                         style = MaterialTheme.typography.labelSmall,
-                        color = colorScheme.onSecondaryContainer,
+                        color = actualColorScheme.onSecondaryContainer,
                     )
                 }
             }
@@ -521,8 +614,8 @@ private fun DynamicColorPreview(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .background(colorScheme.surface)
-                    .border(0.5.dp, colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                    .background(actualColorScheme.surface)
+                    .border(0.5.dp, actualColorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                     .padding(12.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -530,14 +623,14 @@ private fun DynamicColorPreview(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(RoundedCornerShape(6.dp))
-                            .background(colorScheme.tertiaryContainer),
+                            .background(actualColorScheme.tertiaryContainer),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Check,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
-                            tint = colorScheme.onTertiaryContainer,
+                            tint = actualColorScheme.onTertiaryContainer,
                         )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
@@ -545,12 +638,12 @@ private fun DynamicColorPreview(
                         Text(
                             text = "Surface Card",
                             style = MaterialTheme.typography.labelMedium,
-                            color = colorScheme.onSurface,
+                            color = actualColorScheme.onSurface,
                         )
                         Text(
                             text = "onSurface text",
                             style = MaterialTheme.typography.labelSmall,
-                            color = colorScheme.onSurfaceVariant,
+                            color = actualColorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -563,10 +656,10 @@ private fun DynamicColorPreview(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                ColorSwatch("Primary", colorScheme.primary, colorScheme.onPrimary)
-                ColorSwatch("P.Container", colorScheme.primaryContainer, colorScheme.onPrimaryContainer)
-                ColorSwatch("Secondary", colorScheme.secondary, colorScheme.onSecondary)
-                ColorSwatch("S.Container", colorScheme.secondaryContainer, colorScheme.onSecondaryContainer)
+                ColorSwatch("Primary", actualColorScheme.primary, actualColorScheme.onPrimary)
+                ColorSwatch("P.Container", actualColorScheme.primaryContainer, actualColorScheme.onPrimaryContainer)
+                ColorSwatch("Secondary", actualColorScheme.secondary, actualColorScheme.onSecondary)
+                ColorSwatch("S.Container", actualColorScheme.secondaryContainer, actualColorScheme.onSecondaryContainer)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -576,47 +669,48 @@ private fun DynamicColorPreview(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                ColorSwatch("Tertiary", colorScheme.tertiary, colorScheme.onTertiary)
-                ColorSwatch("Surface", colorScheme.surface, colorScheme.onSurface)
-                ColorSwatch("S.Variant", colorScheme.surfaceVariant, colorScheme.onSurfaceVariant)
-                ColorSwatch("Background", colorScheme.background, colorScheme.onBackground)
+                ColorSwatch("Tertiary", actualColorScheme.tertiary, actualColorScheme.onTertiary)
+                ColorSwatch("Surface", actualColorScheme.surface, actualColorScheme.onSurface)
+                ColorSwatch("S.Variant", actualColorScheme.surfaceVariant, actualColorScheme.onSurfaceVariant)
+                ColorSwatch("Background", actualColorScheme.background, actualColorScheme.onBackground)
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // 跳转系统壁纸设置按钮
-            HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.3f))
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable {
-                        try {
-                            val intent = Intent(Intent.ACTION_SET_WALLPAPER).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            // 动态色开启时显示壁纸设置入口
+            if (dynamicColor) {
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider(color = actualColorScheme.outlineVariant.copy(alpha = 0.3f))
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            try {
+                                val intent = Intent(Intent.ACTION_SET_WALLPAPER).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                context.startActivity(intent)
+                            } catch (_: Exception) {
+                                // 某些设备可能不支持此 Intent
                             }
-                            context.startActivity(intent)
-                        } catch (_: Exception) {
-                            // 某些设备可能不支持此 Intent
                         }
-                    }
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Wallpaper,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = stringResource(R.string.dynamic_color_wallpaper_settings),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = colorScheme.primary,
-                )
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Wallpaper,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = actualColorScheme.primary,
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.dynamic_color_wallpaper_settings),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = actualColorScheme.primary,
+                    )
+                }
             }
         }
     }
