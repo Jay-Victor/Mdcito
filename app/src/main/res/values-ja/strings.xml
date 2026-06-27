@@ -149,9 +149,9 @@
     <string name="card_style_minimal">ミニマル</string>
     <string name="card_style_minimal_desc">単色背景、標準ボーダー、シンプルでシャープ</string>
     <string name="card_style_frosted">磨りガラス</string>
-    <string name="card_style_frosted_desc">機能は開発中です</string>
-    <string name="card_style_liquid">リキッドガラス</string>
-    <string name="card_style_liquid_desc">機能は開発中です</string>
+    <string name="card_style_frosted_desc">半透明ブラー効果、方向光照明浮雕テクスチャ</string>
+    <string name="card_style_liquid">液体水ガラス</string>
+    <string name="card_style_liquid_desc">水のような屈折・分散テクスチャ</string>
     <string name="glass_intensity">ガラス強度</string>
     <string name="intensity">強度</string>
     <string name="intensity_level">レベル%d</string>
@@ -170,12 +170,12 @@
     <string name="status_bar_style_minimal_desc">クリーンな透明スタイル</string>
     <string name="status_bar_style_frosted">すりガラス</string>
     <string name="status_bar_style_frosted_desc">半透明ブラー効果、方向光照明浮雕テクスチャ</string>
-    <string name="status_bar_style_liquid">リキッドガラス</string>
-    <string name="status_bar_style_liquid_desc">クリアな屈折テクスチャ</string>
+    <string name="status_bar_style_liquid">液体水ガラス</string>
+    <string name="status_bar_style_liquid_desc">水のような屈折・分散テクスチャ</string>
     <string name="card_style_preview">カードプレビュー</string>
     <string name="status_bar_preview">ステータスバープレビュー</string>
     <string name="transparency_level">透明度</string>
-    <string name="liquid_glass_transparency">リキッドガラス透明度</string>
+    <string name="liquid_glass_transparency">液体水ガラス透明度</string>
 
     <!-- Transition Settings -->
     <string name="animation_group">アニメーション設定</string>
@@ -539,7 +539,7 @@
     <string name="copyright_all">全著作権所有</string>
     <string name="version_format">バージョン %1$s</string>
     <string name="changelog_core">Markdown エディタコア機能</string>
-    <string name="changelog_card_styles">3種類のカードスタイル（ミニマル/すりガラス/リキッドガラス）</string>
+    <string name="changelog_card_styles">3種類のカードスタイル（ミニマル/すりガラス/液体水ガラス）</string>
     <string name="changelog_syntax">シンタックスハイライトとタップして編集</string>
     <string name="changelog_search">全文検索と置換</string>
     <string name="changelog_file_mgmt">ファイル管理とタグシステム</string>
@@ -652,7 +652,7 @@
     <string name="focus_writing">執筆に集中</string>
     <string name="focus_writing_desc">シンプルでエレガントな Markdown エディタ\nリアルタイムプレビュー、シンタックスハイライト、タップ編集\n執筆に没頭できます</string>
     <string name="japanese_aesthetics">和のミニマル美学</string>
-    <string name="japanese_aesthetics_desc">3種類のカードスタイル：ミニマル / すりガラス / リキッドガラス\nウォームテーマスキーム、自然で温もりある視覚体験\n細部まで丁寧に磨き上げ</string>
+    <string name="japanese_aesthetics_desc">3種類のカードスタイル：ミニマル / すりガラス / 液体水ガラス\nウォームテーマスキーム、自然で温もりある視覚体験\n細部まで丁寧に磨き上げ</string>
     <string name="secure_private">安全でプライベート</string>
     <string name="secure_private_desc">すべてのデータをローカルに保存、プライバシーは安心\nバージョンスナップショット、自動保存、SAF ファイル管理\nあなたの言葉は、あなただけのもの</string>
     <string name="file_permission_title">ファイルアクセス権限</string>

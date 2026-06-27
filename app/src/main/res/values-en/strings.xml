@@ -149,9 +149,9 @@
     <string name="card_style_minimal">Minimal</string>
     <string name="card_style_minimal_desc">Solid background, standard border, clean and sharp</string>
     <string name="card_style_frosted">Frosted Glass</string>
-    <string name="card_style_frosted_desc">Feature under development</string>
-    <string name="card_style_liquid">Liquid Glass</string>
-    <string name="card_style_liquid_desc">Feature under development</string>
+    <string name="card_style_frosted_desc">Semi-transparent blur with directional light emboss texture</string>
+    <string name="card_style_liquid">Liquid Water Glass</string>
+    <string name="card_style_liquid_desc">Water-like refraction and dispersion texture</string>
     <string name="glass_intensity">Texture Intensity</string>
     <string name="intensity">Intensity</string>
     <string name="intensity_level">Level %d</string>
@@ -170,12 +170,12 @@
     <string name="status_bar_style_minimal_desc">Clean transparent style</string>
     <string name="status_bar_style_frosted">Frosted Glass</string>
     <string name="status_bar_style_frosted_desc">Semi-transparent blur with directional light emboss texture</string>
-    <string name="status_bar_style_liquid">Liquid Glass</string>
-    <string name="status_bar_style_liquid_desc">Clear refraction texture</string>
+    <string name="status_bar_style_liquid">Liquid Water Glass</string>
+    <string name="status_bar_style_liquid_desc">Water-like refraction and dispersion texture</string>
     <string name="card_style_preview">Card Preview</string>
     <string name="status_bar_preview">Status Bar Preview</string>
     <string name="transparency_level">Transparency</string>
-    <string name="liquid_glass_transparency">Liquid Glass Transparency</string>
+    <string name="liquid_glass_transparency">Liquid Water Glass Transparency</string>
 
     <!-- Transition Settings -->
     <string name="animation_group">Animation Settings</string>
@@ -555,7 +555,7 @@
     <string name="copyright_all">All Rights Reserved</string>
     <string name="version_format">Version %1$s</string>
     <string name="changelog_core">Markdown editor core features</string>
-    <string name="changelog_card_styles">3 card styles (Minimal / Frosted / Liquid Glass)</string>
+    <string name="changelog_card_styles">3 card styles (Minimal / Frosted / Liquid Water Glass)</string>
     <string name="changelog_syntax">Syntax highlighting &amp; tap-to-edit</string>
     <string name="changelog_search">Full-text search &amp; replace</string>
     <string name="changelog_file_mgmt">File management &amp; tag system</string>
@@ -668,7 +668,7 @@
     <string name="focus_writing">Focus on Writing</string>
     <string name="focus_writing_desc">A clean and elegant Markdown editor\nWith live preview, syntax highlighting &amp; tap-to-edit\nLet your writing flow without distraction</string>
     <string name="japanese_aesthetics">Japanese Minimalist Aesthetics</string>
-    <string name="japanese_aesthetics_desc">Three card styles: Minimal / Frosted / Liquid Glass\nWarm theme schemes, natural and cozy visual experience\nEvery detail carefully crafted</string>
+    <string name="japanese_aesthetics_desc">Three card styles: Minimal / Frosted / Liquid Water Glass\nWarm theme schemes, natural and cozy visual experience\nEvery detail carefully crafted</string>
     <string name="secure_private">Secure &amp; Private</string>
     <string name="secure_private_desc">All data stored locally, privacy assured\nVersion snapshots, auto save, SAF file management\nYour words belong only to you</string>
     <string name="file_permission_title">File Access Permission</string>

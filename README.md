@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Platform-Android%2014%2B-brightgreen" alt="Platform" />
   <img src="https://img.shields.io/badge/minSdk-34-green" alt="Min SDK" />
   <img src="https://img.shields.io/badge/targetSdk-36-blue" alt="Target SDK" />
-  <img src="https://img.shields.io/badge/Version-1.1.0-orange" alt="Version" />
+  <img src="https://img.shields.io/badge/Version-1.2.0-orange" alt="Version" />
   <img src="https://img.shields.io/badge/License-AGPL--3.0%20%2F%20Commercial-red" alt="License" />
   <img src="https://img.shields.io/badge/Language-Kotlin-purple" alt="Language" />
   <img src="https://img.shields.io/badge/UI-Jetpack%20Compose%20%2B%20Material%203-4285F4" alt="UI" />
@@ -228,7 +228,7 @@ Mdcito 提供完整的文件/文件夹管理体系，支持本地存储和外部
 | **Material You** | 开关 | Android 12+ 动态取色，跟随系统壁纸生成调色板 |
 | **浅色方案** | 暖色 / 冷色 / 纸质 / 清新 | 浅色模式下的背景色调方案 |
 | **深色方案** | 暖色深色 / 冷色深色 / OLED / 午夜 | 深色模式下的背景色调方案 |
-| **卡片风格** | 日式简约 / 磨砂玻璃 / 液态玻璃 | 控制卡片视觉效果 |
+| **卡片风格** | 日式简约 / 磨砂玻璃 / 液态水玻璃 | 控制卡片视觉效果 |
 
 **字体管理**（设置页 → 外观设置 → 字体设置）：
 
@@ -596,7 +596,7 @@ Mdcito 的开发受益于以下开源项目：
   <img src="https://img.shields.io/badge/Platform-Android%2014%2B-brightgreen" alt="Platform" />
   <img src="https://img.shields.io/badge/minSdk-34-green" alt="Min SDK" />
   <img src="https://img.shields.io/badge/targetSdk-36-blue" alt="Target SDK" />
-  <img src="https://img.shields.io/badge/Version-1.1.0-orange" alt="Version" />
+  <img src="https://img.shields.io/badge/Version-1.2.0-orange" alt="Version" />
   <img src="https://img.shields.io/badge/License-AGPL--3.0%20%2F%20Commercial-red" alt="License" />
   <img src="https://img.shields.io/badge/Language-Kotlin-purple" alt="Language" />
   <img src="https://img.shields.io/badge/UI-Jetpack%20Compose%20%2B%20Material%203-4285F4" alt="UI" />
@@ -814,7 +814,7 @@ Accessible via Settings → Appearance:
 | **Material You** | Toggle | Android 12+ dynamic color from system wallpaper |
 | **Light Schemes** | Warm / Cool / Paper / Fresh | Background tone for light mode |
 | **Dark Schemes** | Warm Dark / Cool Dark / OLED / Midnight | Background tone for dark mode |
-| **Card Style** | Minimal / Frosted Glass / Liquid Glass | Visual card effect |
+| **Card Style** | Minimal / Frosted Glass / Liquid Water Glass | Visual card effect |
 
 **Fonts** (Settings → Appearance → Font):
 

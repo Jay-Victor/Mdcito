@@ -34,8 +34,8 @@ android {
         applicationId = "com.mdcito.app"
         minSdk = 34
         targetSdk = 36
-        versionCode = 10
-        versionName = "1.1.0"
+        versionCode = 11
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -152,6 +152,9 @@ dependencies {
     implementation(libs.browser)
     implementation(libs.timber)
     implementation(libs.okhttp)
+    // ── 玻璃效果依赖（液态/水玻璃核心）：kyant backdrop + fletchmckee liquid ──
+    implementation(libs.backdrop)
+    implementation(libs.liquid)
     implementation(libs.hilt.work)
     implementation("androidx.exifinterface:exifinterface:1.3.7")
     ksp(libs.hilt.work.compiler)

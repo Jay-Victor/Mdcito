@@ -149,9 +149,9 @@
     <string name="card_style_minimal">미니멀</string>
     <string name="card_style_minimal_desc">단색 배경, 표준 테두리, 깔끔하고 선명한 느낌</string>
     <string name="card_style_frosted">서리 유리</string>
-    <string name="card_style_frosted_desc">개발 중인 기능입니다</string>
-    <string name="card_style_liquid">리퀴드 유리</string>
-    <string name="card_style_liquid_desc">개발 중인 기능입니다</string>
+    <string name="card_style_frosted_desc">반투명 블러 효과, 방향 광조명 엠보스 텍스처</string>
+    <string name="card_style_liquid">액체 물유리</string>
+    <string name="card_style_liquid_desc">물 같은 굴절 및 분산 질감</string>
     <string name="glass_intensity">유리 강도</string>
     <string name="intensity">강도</string>
     <string name="intensity_level">%d단계</string>
@@ -170,12 +170,12 @@
     <string name="status_bar_style_minimal_desc">깔끔한 투명 스타일</string>
     <string name="status_bar_style_frosted">서리 유리</string>
     <string name="status_bar_style_frosted_desc">반투명 블러 효과, 방향 광조명 엠보스 텍스처</string>
-    <string name="status_bar_style_liquid">리퀴드 글래스</string>
-    <string name="status_bar_style_liquid_desc">투명한 굴절 질감</string>
+    <string name="status_bar_style_liquid">액체 물유리</string>
+    <string name="status_bar_style_liquid_desc">물 같은 굴절 및 분산 질감</string>
     <string name="card_style_preview">카드 미리보기</string>
     <string name="status_bar_preview">상태 표시줄 미리보기</string>
     <string name="transparency_level">투명도</string>
-    <string name="liquid_glass_transparency">리퀴드 글래스 투명도</string>
+    <string name="liquid_glass_transparency">액체 물유리 투명도</string>
 
     <!-- Transition Settings -->
     <string name="animation_group">애니메이션 설정</string>
@@ -539,7 +539,7 @@
     <string name="copyright_all">모든 권리 보유</string>
     <string name="version_format">버전 %1$s</string>
     <string name="changelog_core">Markdown 편집기 핵심 기능</string>
-    <string name="changelog_card_styles">3가지 카드 스타일 (미니멀/서리 유리/리퀴드 유리)</string>
+    <string name="changelog_card_styles">3가지 카드 스타일 (미니멀/서리 유리/액체 물유리)</string>
     <string name="changelog_syntax">구문 강조 및 탭하여 편집</string>
     <string name="changelog_search">전체 텍스트 검색 및 바꾸기</string>
     <string name="changelog_file_mgmt">파일 관리 및 태그 시스템</string>
@@ -652,7 +652,7 @@
     <string name="focus_writing">글쓰기에 집중</string>
     <string name="focus_writing_desc">깔끔하고 우아한 Markdown 편집기\n실시간 미리 보기, 구문 강조 및 탭 편집 지원\n방해 없이 글쓰기에 집중하세요</string>
     <string name="japanese_aesthetics">일본 미니멀 미학</string>
-    <string name="japanese_aesthetics_desc">3가지 카드 스타일: 미니멀 / 서리 유리 / 리퀴드 유리\n웜 테마 구성, 자연스럽고 포근한 시각 경험\n모든 디테일이 정성껏 다듬어졌습니다</string>
+    <string name="japanese_aesthetics_desc">3가지 카드 스타일: 미니멀 / 서리 유리 / 액체 물유리\n웜 테마 구성, 자연스럽고 포근한 시각 경험\n모든 디테일이 정성껏 다듬어졌습니다</string>
     <string name="secure_private">안전하고 프라이빗</string>
     <string name="secure_private_desc">모든 데이터 로컬 저장, 프라이버시 안심\n버전 스냅샷, 자동 저장, SAF 파일 관리\n당신의 글은 오직 당신의 것</string>
     <string name="file_permission_title">파일 접근 권한</string>

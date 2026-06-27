@@ -7,6 +7,32 @@
 
 ---
 
+## [1.2.0] - 2026-06-28
+
+### Changed
+
+#### 卡片与导航栏风格
+- 产品术语统一：将"液态玻璃"更名为"液态水玻璃"（8 种语言同步：简中/繁中/英/日/韩/德/法）
+- 磨砂玻璃与液态水玻璃的描述从"功能尚在开发"更新为实际功能描述
+  - 磨砂玻璃：半通透模糊效果，方向光照浮雕纹理
+  - 液态水玻璃：水润折射色散质感
+- 卡片与导航栏风格设置页预览组件与实际效果对齐：顶部圆角（磨砂 16dp / 液态水玻璃 28dp）、图标 24dp、文字 12sp、选中项 56×32dp secondaryContainer 背景
+
+### Fixed
+
+#### 卡片与导航栏风格
+- 修复磨砂玻璃效果不显示的问题：实现真实的 `.liquidGlass(enableLens=false)` 背景模糊
+- 修复液态水玻璃效果不显示的问题：实现真实的 `.waterGlass()` 流体折射与色散效果
+- 修复 GlassThemeProvisioning 中 `content()` 放在 `layerBackdrop` Box 内部导致的渲染树自引用环崩溃（SIGSEGV signal 11 SEGV_MAPERR）
+- 修复液态水玻璃卡片样式设置页强度滑块无效的问题（glassIntensity 参数未传递到 LiquidGlassCard）
+- 修复状态栏预览卡片内容被圆角裁剪的问题：预览容器宽度有限，导航项改用 `Modifier.weight(1f)` 平均分配宽度
+
+#### 主题与状态栏
+- 修复切换字体后系统状态栏与页面割裂（变黑/不透明）的问题：将 `enableEdgeToEdge()` 从 `SideEffect` 改为 `DisposableEffect(isDark)`，避免字体切换触发的不必要重置
+- 新增 `values-night` 资源限定（`themes.xml` 和 `colors.xml`），确保深色模式下 `windowBackground` 和 `windowLightStatusBar` 正确设置，避免重组间隙的视觉割裂
+
+---
+
 ## [1.1.0] - 2026-06-17
 
 ### Security
@@ -265,6 +291,7 @@
 
 ---
 
+[1.2.0]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.2.0
 [1.1.0]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.1.0
 [1.0.8]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.8
 [1.0.7]: https://github.com/Jay-Victor/Mdcito/releases/tag/v1.0.7

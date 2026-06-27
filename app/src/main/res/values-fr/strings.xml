@@ -149,9 +149,9 @@
     <string name="card_style_minimal">Minimal</string>
     <string name="card_style_minimal_desc">Fond uni, bordure standard, net et précis</string>
     <string name="card_style_frosted">Verre dépoli</string>
-    <string name="card_style_frosted_desc">Fonctionnalité en cours de développement</string>
-    <string name="card_style_liquid">Verre liquide</string>
-    <string name="card_style_liquid_desc">Fonctionnalité en cours de développement</string>
+    <string name="card_style_frosted_desc">Effet de flou semi-transparent, texture en relief d\u2019eclairage directionnel</string>
+    <string name="card_style_liquid">Verre d\u2019eau liquide</string>
+    <string name="card_style_liquid_desc">Texture de réfraction et dispersion aquatique</string>
     <string name="glass_intensity">Intensité du verre</string>
     <string name="intensity">Intensité</string>
     <string name="intensity_level">Niveau %d</string>
@@ -170,12 +170,12 @@
     <string name="status_bar_style_minimal_desc">Style transparent épuré</string>
     <string name="status_bar_style_frosted">Verre dépoli</string>
     <string name="status_bar_style_frosted_desc">Effet de flou semi-transparent, texture en relief d\u2019eclairage directionnel</string>
-    <string name="status_bar_style_liquid">Verre liquide</string>
-    <string name="status_bar_style_liquid_desc">Texture de réfraction claire</string>
+    <string name="status_bar_style_liquid">Verre d\u2019eau liquide</string>
+    <string name="status_bar_style_liquid_desc">Texture de réfraction et dispersion aquatique</string>
     <string name="card_style_preview">Aperçu de carte</string>
     <string name="status_bar_preview">Aperçu de barre d\'état</string>
     <string name="transparency_level">Transparence</string>
-    <string name="liquid_glass_transparency">Transparence verre liquide</string>
+    <string name="liquid_glass_transparency">Transparence verre d\u2019eau liquide</string>
 
     <!-- Transition Settings -->
     <string name="animation_group">Paramètres d\'animation</string>
@@ -539,7 +539,7 @@
     <string name="copyright_all">Tous droits réservés</string>
     <string name="version_format">Version %1$s</string>
     <string name="changelog_core">Fonctionnalités principales de l\'éditeur Markdown</string>
-    <string name="changelog_card_styles">3 styles de cartes (Minimal / Verre dépoli / Verre liquide)</string>
+    <string name="changelog_card_styles">3 styles de cartes (Minimal / Verre dépoli / Verre d\u2019eau liquide)</string>
     <string name="changelog_syntax">Coloration syntaxique &amp; appuyer pour modifier</string>
     <string name="changelog_search">Recherche et remplacement en texte intégral</string>
     <string name="changelog_file_mgmt">Gestion des fichiers &amp; système de tags</string>
@@ -652,7 +652,7 @@
     <string name="focus_writing">Écriture concentrée</string>
     <string name="focus_writing_desc">Un éditeur Markdown simple et élégant\nAvec aperçu en direct, coloration syntaxique &amp; appuyer pour modifier\nLaissez votre écriture couler sans distraction</string>
     <string name="japanese_aesthetics">Esthétique minimaliste japonaise</string>
-    <string name="japanese_aesthetics_desc">Trois styles de cartes : Minimal / Verre dépoli / Verre liquide\nSchémas de thème aux couleurs chaudes, expérience visuelle naturelle et confortable\nChaque détail est soigneusement travaillé</string>
+    <string name="japanese_aesthetics_desc">Trois styles de cartes : Minimal / Verre dépoli / Verre d\u2019eau liquide\nSchémas de thème aux couleurs chaudes, expérience visuelle naturelle et confortable\nChaque détail est soigneusement travaillé</string>
     <string name="secure_private">Sécurisé &amp; Privé</string>
     <string name="secure_private_desc">Toutes les données stockées localement, confidentialité assurée\nInstantanés de version, enregistrement automatique, gestion de fichiers SAF\nVos mots n\'appartiennent qu\'à vous</string>
     <string name="file_permission_title">Autorisation d\'accès aux fichiers</string>

@@ -153,9 +153,9 @@
     <string name="card_style_minimal">日式简约</string>
     <string name="card_style_minimal_desc">实色背景，标准边框，清晰利落</string>
     <string name="card_style_frosted">磨砂玻璃</string>
-    <string name="card_style_frosted_desc">功能尚在开发中</string>
-    <string name="card_style_liquid">液态玻璃</string>
-    <string name="card_style_liquid_desc">功能尚在开发中</string>
+    <string name="card_style_frosted_desc">半通透模糊效果，方向光照浮雕纹理</string>
+    <string name="card_style_liquid">液态水玻璃</string>
+    <string name="card_style_liquid_desc">水润折射色散质感</string>
     <string name="glass_intensity">纹理强度</string>
     <string name="intensity">强度</string>
     <string name="intensity_level">%d级</string>
@@ -174,12 +174,12 @@
     <string name="status_bar_style_minimal_desc">简洁透明风格</string>
     <string name="status_bar_style_frosted">磨砂玻璃</string>
     <string name="status_bar_style_frosted_desc">半通透模糊效果，方向光照浮雕纹理</string>
-    <string name="status_bar_style_liquid">液态玻璃</string>
-    <string name="status_bar_style_liquid_desc">通透折射质感</string>
+    <string name="status_bar_style_liquid">液态水玻璃</string>
+    <string name="status_bar_style_liquid_desc">水润折射色散质感</string>
     <string name="card_style_preview">卡片预览</string>
     <string name="status_bar_preview">状态栏预览</string>
     <string name="transparency_level">透明度</string>
-    <string name="liquid_glass_transparency">液态玻璃透明度</string>
+    <string name="liquid_glass_transparency">液态水玻璃透明度</string>
 
     <!-- Transition Settings -->
     <string name="animation_group">动画设置</string>
@@ -667,7 +667,7 @@
     <string name="copyright_all">版权所有</string>
     <string name="version_format">版本 %1$s</string>
     <string name="changelog_core">Markdown 编辑器核心功能</string>
-    <string name="changelog_card_styles">3 种卡片风格（简约/毛玻璃/液态玻璃）</string>
+    <string name="changelog_card_styles">3 种卡片风格（简约/毛玻璃/液态水玻璃）</string>
     <string name="changelog_syntax">语法高亮与即点即改</string>
     <string name="changelog_search">全文搜索与替换</string>
     <string name="changelog_file_mgmt">文件管理与标签系统</string>
@@ -782,7 +782,7 @@
     <string name="focus_writing">专注写作</string>
     <string name="focus_writing_desc">简洁优雅的 Markdown 编辑器\n支持实时预览、语法高亮与即点即改\n让你的写作心无旁骛</string>
     <string name="japanese_aesthetics">日式简约美学</string>
-    <string name="japanese_aesthetics_desc">三种卡片风格：简约 / 毛玻璃 / 液态玻璃\n暖色主题方案，自然温暖的视觉体验\n每一处细节都精心打磨</string>
+    <string name="japanese_aesthetics_desc">三种卡片风格：简约 / 毛玻璃 / 液态水玻璃\n暖色主题方案，自然温暖的视觉体验\n每一处细节都精心打磨</string>
     <string name="secure_private">安全私密</string>
     <string name="secure_private_desc">所有数据本地存储，隐私无忧\n版本快照、自动保存、SAF 文件管理\n你的文字，只属于你</string>
     <string name="file_permission_title">文件访问权限</string>

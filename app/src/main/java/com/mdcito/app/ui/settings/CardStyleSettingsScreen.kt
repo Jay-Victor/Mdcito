@@ -37,11 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,9 +50,10 @@ import com.mdcito.app.data.locale.LanguageHelper
 import com.mdcito.app.ui.components.CardStyle
 import com.mdcito.app.ui.components.MdcitoCard
 import com.mdcito.app.ui.components.MdcitoCardDefaults
+import com.mdcito.app.ui.components.glass.GlassThemeProvisioning
+import com.mdcito.app.ui.components.glass.liquidGlass
+import com.mdcito.app.ui.components.glass.waterGlass
 import com.mdcito.app.ui.theme.LocalIsDarkTheme
-import com.mdcito.app.ui.components.rememberNoiseBitmap
-import kotlin.math.max
 
 @Composable
 fun CardStyleSettingsScreen(
@@ -381,61 +380,83 @@ private fun CardPreview(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        val isDarkTheme = LocalIsDarkTheme.current
+        // ── 卡片预览的彩色背景容器（与状态栏预览版块一致的彩色背景块）──
+        // 固定高度 + clip 包裹 GlassThemeProvisioning：
+        //   1. 使彩色渐变作为可见的背景块（卡片四周露出渐变）
+        //   2. 为 BoxWithConstraints 提供有界高度约束，避免可滚动 Column 中
+        //      fillMaxSize 高度无界导致背景层塌缩为 0、玻璃采样区为空
+        //   3. MdcitoCard 的 .liquidGlass() / .waterGlass() 采样此渐变
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-                .drawBehind {
-                    drawRect(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFF6B6BFF),
-                                Color(0xFF4ECDC4),
-                                Color(0xFFFF6B9D),
-                            ),
-                            start = Offset.Zero,
-                            end = Offset(size.width, size.height),
-                        ),
-                    )
-                }
-                .padding(16.dp),
-            contentAlignment = Alignment.Center,
+                .height(180.dp)
+                .clip(RoundedCornerShape(10.dp)),
         ) {
-            MdcitoCard(
-                cardStyle = style,
-                glassIntensity = cardGlassIntensity,
-                transparency = cardTransparency,
-                modifier = Modifier.fillMaxWidth(),
+            GlassThemeProvisioning(
+                darkTheme = isDarkTheme,
+                backgroundContent = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .drawBehind {
+                                drawRect(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFF6B6BFF),
+                                            Color(0xFF4ECDC4),
+                                            Color(0xFFFF6B9D),
+                                        ),
+                                        start = Offset.Zero,
+                                        end = Offset(size.width, size.height),
+                                    ),
+                                )
+                            },
+                    )
+                },
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 ) {
-                    Text(
-                        text = "Mdcito",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.W600,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(R.string.card_preview_title),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MdcitoCardDefaults.glassSubtleContentColor(),
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                    MdcitoCard(
+                        cardStyle = style,
+                        glassIntensity = cardGlassIntensity,
+                        transparency = cardTransparency,
+                        modifier = Modifier.fillMaxSize(),
                     ) {
-                        Text(
-                            text = stringResource(R.string.card_preview_files_count, 3),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MdcitoCardDefaults.glassSubtleContentColor(),
-                        )
-                        Text(
-                            text = "2.4 MB",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MdcitoCardDefaults.glassSubtleContentColor(),
-                        )
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                        ) {
+                            Text(
+                                text = "Mdcito",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.W600,
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = stringResource(R.string.card_preview_title),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MdcitoCardDefaults.glassSubtleContentColor(),
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.card_preview_files_count, 3),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MdcitoCardDefaults.glassSubtleContentColor(),
+                                )
+                                Text(
+                                    text = "2.4 MB",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MdcitoCardDefaults.glassSubtleContentColor(),
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -497,32 +518,50 @@ private fun StatusBarPreview(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        val isDarkTheme = LocalIsDarkTheme.current
+        // ── 嵌套 GlassThemeProvisioning：以彩色渐变作为本预览的 backgroundContent， ──
+        // ── 使 PreviewNavBar 的 .liquidGlass() / .waterGlass() 能采样到此渐变 ──
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .drawBehind {
-                    drawRect(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFF6B6BFF),
-                                Color(0xFF4ECDC4),
-                                Color(0xFFFF6B9D),
-                            ),
-                            start = Offset.Zero,
-                            end = Offset(size.width, size.height),
-                        ),
+                .clip(RoundedCornerShape(10.dp)),
+        ) {
+            GlassThemeProvisioning(
+                darkTheme = isDarkTheme,
+                backgroundContent = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .drawBehind {
+                                drawRect(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFF6B6BFF),
+                                            Color(0xFF4ECDC4),
+                                            Color(0xFFFF6B9D),
+                                        ),
+                                        start = Offset.Zero,
+                                        end = Offset(size.width, size.height),
+                                    ),
+                                )
+                            },
+                    )
+                },
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                    contentAlignment = Alignment.BottomCenter,
+                ) {
+                    PreviewNavBar(
+                        navBarStyle = navBarStyle,
+                        navBarGlassIntensity = navBarGlassIntensity,
+                        navBarTransparency = navBarTransparency,
                     )
                 }
-                .padding(12.dp),
-            contentAlignment = Alignment.BottomCenter,
-        ) {
-            PreviewNavBar(
-                navBarStyle = navBarStyle,
-                navBarGlassIntensity = navBarGlassIntensity,
-                navBarTransparency = navBarTransparency,
-            )
+            }
         }
     }
 }
@@ -534,7 +573,6 @@ private fun PreviewNavBar(
     navBarTransparency: Int,
 ) {
     val isDarkTheme = LocalIsDarkTheme.current
-    val shape = RoundedCornerShape(10.dp)
 
     val navItems = listOf(
         Icons.Outlined.Home to stringResource(R.string.nav_label_home),
@@ -543,33 +581,69 @@ private fun PreviewNavBar(
         Icons.Outlined.Settings to stringResource(R.string.nav_label_settings),
     )
 
+    // 选中第 0 项作为预览高亮（与实际 MdcitoBottomNavItem 的布局保持一致：
+    // 图标 24dp、文字 12sp、选中项 Box(56×32dp) + secondaryContainer 背景）
     val contentRow: @Composable () -> Unit = {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 8.dp),
+                .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             navItems.forEachIndexed { index, (icon, label) ->
+                val isSelected = index == 0
                 val unselectedColor = LocalContentColor.current
+                val iconColor = if (isSelected) MaterialTheme.colorScheme.primary else unselectedColor
+                val textColor = if (isSelected) MaterialTheme.colorScheme.primary else unselectedColor
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    // 预览容器宽度有限（≈312dp），若用固定 padding(horizontal=12.dp)
+                    // 4 项 × 80dp = 320dp > 312dp 会被圆角裁剪。
+                    // 改用 weight(1f) 让每项平均分配宽度，确保内容完整显示且间距均匀。
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = 4.dp),
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = label,
-                        tint = if (index == 0) MaterialTheme.colorScheme.primary
-                        else unselectedColor,
-                        modifier = Modifier.size(20.dp),
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .size(width = 56.dp, height = 32.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.secondaryContainer),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = label,
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier.size(width = 56.dp, height = 32.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = label,
+                                tint = iconColor,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        }
+                    }
+
                     Text(
                         text = label,
-                        fontSize = 10.sp,
-                        color = if (index == 0) MaterialTheme.colorScheme.primary
-                        else unselectedColor,
-                        fontWeight = if (index == 0) FontWeight.W700 else FontWeight.W400,
+                        color = textColor,
+                        fontSize = 12.sp,
+                        fontWeight = if (isSelected) FontWeight.W700 else FontWeight.W400,
+                        lineHeight = 16.sp,
+                        maxLines = 1,
+                        modifier = Modifier.padding(top = 2.dp),
                     )
                 }
             }
@@ -578,166 +652,39 @@ private fun PreviewNavBar(
 
     when (navBarStyle) {
         "frosted_glass" -> {
-            // 磨砂玻璃预览
-            val intensityFactor = (navBarGlassIntensity / 300f).coerceIn(0.01f, 1f)
-            val noiseBitmap = rememberNoiseBitmap()  // Bitmap for texture layer
-
-            val frostedColor = if (isDarkTheme) Color(0xFF282C38) else Color(0xFFF9F7F4)
-
-            val baseAlpha = if (isDarkTheme) 0.65f else 0.70f
+            // 磨砂玻璃预览 — 真实背景模糊（.liquidGlass(enableLens = false)）
+            // 与实际 MdcitoBottomNavBar 一致：顶部圆角 16dp、深色模式叠加层
+            val frostedShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+            val intensityFactor = (navBarGlassIntensity / 300f).coerceIn(0f, 1f)
+            val overlayAlphaBoost = intensityFactor * 0.30f
+            val containerColor = if (isDarkTheme) Color(0xFF282C38) else Color(0xFFF9F7F4)
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(shape),
+                    .liquidGlass(
+                        enabled = true,
+                        shape = frostedShape,
+                        containerColor = containerColor,
+                        shadowElevation = if (isDarkTheme) 6.dp else 3.dp,
+                        borderWidth = 1.dp,
+                        blurRadius = (10f + 20f * intensityFactor).dp,
+                        overlayAlphaBoost = overlayAlphaBoost,
+                        enableLens = false,
+                    )
+                    .clip(frostedShape),
             ) {
-                // Layer 1: 垂直渐变基底
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(
-                                    frostedColor.copy(alpha = baseAlpha * 0.95f),
-                                    frostedColor.copy(alpha = baseAlpha * 1.05f),
-                                    frostedColor.copy(alpha = baseAlpha),
-                                ),
-                            ),
-                            shape,
-                        )
-                )
-
-                // Layer 2: 径向中心聚光 + 微弱顶部漫反射高光
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .drawBehind {
-                            val r = 10.dp.toPx()
-
-                            // 2a. 径向中心聚光
-                            drawRoundRect(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color.White.copy(alpha = (baseAlpha * 0.12f).coerceAtMost(0.15f)),
-                                        Color.White.copy(alpha = (baseAlpha * 0.04f).coerceAtMost(0.06f)),
-                                        Color.Transparent,
-                                    ),
-                                    center = Offset(size.width * 0.50f, size.height * 0.48f),
-                                    radius = max(size.width, size.height) * 0.55f,
-                                ),
-                                cornerRadius = CornerRadius(r),
+                // 深色模式内容可读性增强（与实际 MdcitoBottomNavBar 一致）
+                if (isDarkTheme) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(
+                                Color(0xFF1E2028).copy(alpha = 0.22f),
+                                frostedShape,
                             )
-
-                            // 2b. 微弱顶部漫反射高光
-                            val diffuseAlpha = if (isDarkTheme) 0.05f else 0.08f
-                            drawRoundRect(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.White.copy(alpha = diffuseAlpha),
-                                        Color.White.copy(alpha = diffuseAlpha * 0.25f),
-                                        Color.Transparent,
-                                    ),
-                                    startY = 0f,
-                                    endY = size.height * 0.25f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-                        }
-                )
-
-                // Layer 3: 细腻噪点纹理（磨砂颗粒感）
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .drawBehind {
-                            val noiseAlpha = if (isDarkTheme) {
-                                0.025f + 0.225f * intensityFactor    // dark: 0.025 → 0.250
-                            } else {
-                                0.035f + 0.295f * intensityFactor    // light: 0.035 → 0.330
-                            }
-                            val bw = noiseBitmap.width.toFloat()
-                            val bh = noiseBitmap.height.toFloat()
-                            var y = 0f
-                            while (y < size.height) {
-                                var x = 0f
-                                while (x < size.width) {
-                                    drawImage(image = noiseBitmap, topLeft = Offset(x, y), alpha = noiseAlpha)
-                                    x += bw
-                                }
-                                y += bh
-                            }
-                        }
-                )
-
-                // ═══ Layer 4: 厚度感层 — 内阴影 + 边缘受光亮环 ═══
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .drawBehind {
-                            val r = 10.dp.toPx()
-                            val w = size.width
-                            val h = size.height
-
-                            // 4a. 内阴影 Inner Shadow（右下方向）
-                            val innerShadowAlpha = if (isDarkTheme) 0.12f else 0.08f
-                            drawRoundRect(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.Transparent,
-                                        Color(0xFF000812).copy(alpha = innerShadowAlpha),
-                                    ),
-                                    start = Offset(0f, 0f),
-                                    end = Offset(w, h),
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-
-                            // 4b. 边缘受光亮环 Rim Light
-                            val rimAlpha = if (isDarkTheme) 0.10f else 0.14f
-                            drawRoundRect(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.Transparent,
-                                        Color.White.copy(alpha = rimAlpha * 0.35f),
-                                        Color.White.copy(alpha = rimAlpha),
-                                    ),
-                                    center = Offset(w / 2f, h / 2f),
-                                    radius = max(w, h) * 0.90f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-                            // 方向叠加
-                            drawRoundRect(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(
-                                        Color.White.copy(alpha = rimAlpha * 0.50f),
-                                        Color.Transparent,
-                                    ),
-                                    start = Offset(0f, 0f),
-                                    end = Offset(w, h),
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-
-                            // 4c. 底部暗角
-                            val bottomAlpha = if (isDarkTheme) 0.05f else 0.03f
-                            drawRoundRect(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.Black.copy(alpha = bottomAlpha),
-                                    ),
-                                    startY = h * 0.72f,
-                                    endY = h,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-                        }
-                )
-
-                // Layer 5: 内容（深色模式下覆盖内容颜色为白色）
+                    )
+                }
                 val previewContentColor = MdcitoCardDefaults.glassContentColor()
                 CompositionLocalProvider(LocalContentColor provides previewContentColor) {
                     contentRow()
@@ -745,231 +692,36 @@ private fun PreviewNavBar(
             }
         }
         "liquid_glass" -> {
-            // 液态玻璃预览
-            val liquidShape = RoundedCornerShape(20.dp)
-
-            val bgColor = if (isDarkTheme) Color(0xFF1C2030) else Color(0xFFF4EDE6)
-            val baseAlpha = if (isDarkTheme) 0.62f else 0.68f
+            // 液态水玻璃预览 — 水玻璃（真实流体玻璃 + 折射色散）
+            // 产品"液态水玻璃"= 水玻璃, 仅 .waterGlass(), 不堆叠 liquidGlass 以保留折射/色散
+            // 与实际 MdcitoBottomNavBar 一致：顶部圆角 28dp、深色模式叠加层
+            val liquidShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+            val containerColor = if (isDarkTheme) Color(0xFF1C2030) else Color(0xFFF4EDE6)
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .waterGlass(
+                        enabled = true,
+                        shape = liquidShape,
+                        containerColor = containerColor,
+                        shadowElevation = if (isDarkTheme) 14.dp else 10.dp,
+                        borderWidth = 0.7.dp,
+                        overlayAlphaBoost = 0f,
+                    )
                     .clip(liquidShape),
             ) {
-                // ═══ 合并绘制层 ═══
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .drawBehind {
-                            val r = 20.dp.toPx()
-                            val w = size.width
-                            val h = size.height
-
-                            // ── 1. 半透明磨砂基底 ──
-                            drawRoundRect(
-                                brush = Brush.verticalGradient(
-                                    listOf(
-                                        bgColor.copy(alpha = baseAlpha * 0.72f),
-                                        bgColor.copy(alpha = baseAlpha * 0.88f),
-                                        bgColor.copy(alpha = baseAlpha),
-                                    )
-                                ),
-                                cornerRadius = CornerRadius(r),
+                // 深色模式内容可读性增强（与实际 MdcitoBottomNavBar 一致）
+                if (isDarkTheme) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(
+                                Color(0xFF141824).copy(alpha = 0.20f),
+                                liquidShape,
                             )
-
-                            // ── 2. 背景色彩渗透 ──
-                            val bleedAlpha = if (isDarkTheme) 0.12f else 0.09f
-                            drawRoundRect(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color(0xFFF2E8DC).copy(alpha = bleedAlpha * 0.5f),
-                                        Color(0xFFE4D8F0).copy(alpha = bleedAlpha * 0.8f),
-                                        Color(0xFFB8C8E8).copy(alpha = bleedAlpha * 0.6f),
-                                        Color.Transparent,
-                                    ),
-                                    center = Offset(w * 0.46f, h * 0.42f),
-                                    radius = max(w, h) * 0.56f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-                            drawRoundRect(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(
-                                        Color(0xFFFFF0E0).copy(alpha = bleedAlpha * 0.35f),
-                                        Color.Transparent,
-                                        Color.Transparent,
-                                        Color(0xFFD0D8FF).copy(alpha = bleedAlpha * 0.30f),
-                                    ),
-                                    start = Offset(0f, 0f),
-                                    end = Offset(w, h),
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-
-                            // ── 3a. 液面阴影 ──
-                            val shadowAlpha = if (isDarkTheme) 0.28f else 0.14f
-                            drawRoundRect(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.Transparent,
-                                        Color(0xFF0A0614).copy(alpha = shadowAlpha * 0.45f),
-                                        Color(0xFF0A0614).copy(alpha = shadowAlpha * 0.85f),
-                                        Color(0xFF0A0614).copy(alpha = shadowAlpha * 1.2f),
-                                    ),
-                                    startY = h * 0.30f,
-                                    endY = h,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-                            drawRoundRect(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.Transparent,
-                                        Color(0xFF060308).copy(alpha = shadowAlpha * 0.75f),
-                                    ),
-                                    start = Offset(0f, 0f),
-                                    end = Offset(w, h),
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-                            drawRoundRect(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.Transparent,
-                                        Color(0xFF080410).copy(alpha = shadowAlpha * 0.35f),
-                                        Color(0xFF080410).copy(alpha = shadowAlpha * 0.65f),
-                                    ),
-                                    center = Offset(w * 0.44f, h * 0.38f),
-                                    radius = max(w, h) * 0.68f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-
-                            // ── 3b. 镜面高光 ──
-                            val specAlpha = if (isDarkTheme) 0.40f else 0.78f
-                            drawRoundRect(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color(0xFFFFFFFF).copy(alpha = specAlpha * 0.92f),
-                                        Color(0xFFFFFAF4).copy(alpha = specAlpha * 0.60f),
-                                        Color(0xFFF8EDE0).copy(alpha = specAlpha * 0.28f),
-                                        Color(0xFFF0DDD0).copy(alpha = specAlpha * 0.08f),
-                                        Color.Transparent,
-                                    ),
-                                    center = Offset(w * 0.30f, h * 0.22f),
-                                    radius = max(w, h) * 0.52f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-                            drawRoundRect(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color(0xFFFFFFFC).copy(alpha = specAlpha * 0.35f),
-                                        Color(0xFFFFF6EE).copy(alpha = specAlpha * 0.12f),
-                                        Color.Transparent,
-                                    ),
-                                    center = Offset(w * 0.76f, h * 0.15f),
-                                    radius = max(w, h) * 0.24f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-
-                            // ── 3c. 棱线反光 ──
-                            val edgeAlpha = if (isDarkTheme) 0.25f else 0.55f
-                            drawRoundRect(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color(0xFFFFFFFF).copy(alpha = edgeAlpha),
-                                        Color(0xFFFFFDF8).copy(alpha = edgeAlpha * 0.52f),
-                                        Color(0xFFF8F0E4).copy(alpha = edgeAlpha * 0.14f),
-                                        Color.Transparent,
-                                    ),
-                                    startY = 0f,
-                                    endY = h * 0.08f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-                            drawRoundRect(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color(0xFFFFFFFF).copy(alpha = edgeAlpha * 0.75f),
-                                        Color(0xFFFFFDF8).copy(alpha = edgeAlpha * 0.28f),
-                                        Color(0xFFF8F0E4).copy(alpha = edgeAlpha * 0.05f),
-                                        Color.Transparent,
-                                    ),
-                                    startX = 0f,
-                                    endX = w * 0.08f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-
-                            // ── 3d. 内表面反射 ──
-                            val innerAlpha = if (isDarkTheme) 0.10f else 0.25f
-                            drawRoundRect(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color(0xFFFFFFFF).copy(alpha = innerAlpha),
-                                        Color(0xFFFFF8F0).copy(alpha = innerAlpha * 0.40f),
-                                        Color.Transparent,
-                                    ),
-                                    startY = 0f,
-                                    endY = h * 0.035f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-                            drawRoundRect(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color(0xFFFFFFFF).copy(alpha = innerAlpha * 0.60f),
-                                        Color(0xFFFFF8F0).copy(alpha = innerAlpha * 0.18f),
-                                        Color.Transparent,
-                                    ),
-                                    startX = 0f,
-                                    endX = w * 0.04f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-
-                            // ── 4a. 边缘暗晕 ──
-                            val haloAlpha = if (isDarkTheme) 0.15f else 0.12f
-                            drawRoundRect(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.Transparent,
-                                        bgColor.copy(alpha = haloAlpha * 0.3f),
-                                        bgColor.copy(alpha = haloAlpha * 0.7f),
-                                        bgColor.copy(alpha = haloAlpha),
-                                    ),
-                                    center = Offset(w * 0.5f, h * 0.5f),
-                                    radius = max(w, h) * 0.52f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-
-                            // ── 4b. 边缘亮环 ──
-                            val rimAlpha = if (isDarkTheme) 0.14f else 0.30f
-                            drawRoundRect(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.Transparent,
-                                        Color(0xFFFFFFEE).copy(alpha = rimAlpha * 0.18f),
-                                        Color(0xFFFFFFFC).copy(alpha = rimAlpha * 0.50f),
-                                        Color(0xFFFFFFFF).copy(alpha = rimAlpha * 0.80f),
-                                    ),
-                                    center = Offset(w * 0.5f, h * 0.5f),
-                                    radius = max(w, h) * 0.90f,
-                                ),
-                                cornerRadius = CornerRadius(r),
-                            )
-                        }
-                )
-
-                // 深色模式下覆盖内容颜色为白色
+                    )
+                }
                 val previewContentColor = MdcitoCardDefaults.glassContentColor()
                 CompositionLocalProvider(LocalContentColor provides previewContentColor) {
                     contentRow()
@@ -977,10 +729,12 @@ private fun PreviewNavBar(
             }
         }
         else -> {
+            // minimal 预览（与实际一致：顶部圆角 16dp）
+            val minimalShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(shape)
+                    .clip(minimalShape)
                     .background(
                         MaterialTheme.colorScheme.surface.copy(alpha = 1.0f - (navBarTransparency / 100f)),
                     ),

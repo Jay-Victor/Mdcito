@@ -149,9 +149,9 @@
     <string name="card_style_minimal">Minimal</string>
     <string name="card_style_minimal_desc">Einfarbiger Hintergrund, Standardrahmen, klar und scharf</string>
     <string name="card_style_frosted">Sandstrahlglas</string>
-    <string name="card_style_frosted_desc">Funktion in Entwicklung</string>
-    <string name="card_style_liquid">Flüssigglas</string>
-    <string name="card_style_liquid_desc">Funktion in Entwicklung</string>
+    <string name="card_style_frosted_desc">Halbtransparenter Blur-Effekt, gerichtetes Licht-Prägetextur</string>
+    <string name="card_style_liquid">Flüssigwasserglas</string>
+    <string name="card_style_liquid_desc">Wasserartige Brechungs- und Dispersionstextur</string>
     <string name="glass_intensity">Glasintensität</string>
     <string name="intensity">Intensität</string>
     <string name="intensity_level">Stufe %d</string>
@@ -170,12 +170,12 @@
     <string name="status_bar_style_minimal_desc">Klarer transparenter Stil</string>
     <string name="status_bar_style_frosted">Milchglas</string>
     <string name="status_bar_style_frosted_desc">Halbtransparenter Blur-Effekt, gerichtetes Licht-Prägetextur</string>
-    <string name="status_bar_style_liquid">Flüssigglas</string>
-    <string name="status_bar_style_liquid_desc">Klare Brechungstextur</string>
+    <string name="status_bar_style_liquid">Flüssigwasserglas</string>
+    <string name="status_bar_style_liquid_desc">Wasserartige Brechungs- und Dispersionstextur</string>
     <string name="card_style_preview">Kartenvorschau</string>
     <string name="status_bar_preview">Statusleisten-Vorschau</string>
     <string name="transparency_level">Transparenz</string>
-    <string name="liquid_glass_transparency">Flüssigglas-Transparenz</string>
+    <string name="liquid_glass_transparency">Flüssigwasserglas-Transparenz</string>
 
     <!-- Transition Settings -->
     <string name="animation_group">Animationseinstellungen</string>
@@ -539,7 +539,7 @@
     <string name="copyright_all">Alle Rechte vorbehalten</string>
     <string name="version_format">Version %1$s</string>
     <string name="changelog_core">Markdown-Editor-Kernfunktionen</string>
-    <string name="changelog_card_styles">3 Kartenstile (Minimal / Milchglas / Flüssigglas)</string>
+    <string name="changelog_card_styles">3 Kartenstile (Minimal / Milchglas / Flüssigwasserglas)</string>
     <string name="changelog_syntax">Syntaxhervorhebung &amp; Antippen zum Bearbeiten</string>
     <string name="changelog_search">Volltextsuche &amp; Ersetzen</string>
     <string name="changelog_file_mgmt">Dateiverwaltung &amp; Tag-System</string>
@@ -652,7 +652,7 @@
     <string name="focus_writing">Konzentriertes Schreiben</string>
     <string name="focus_writing_desc">Ein einfacher und eleganter Markdown-Editor\nMit Live-Vorschau, Syntaxhervorhebung &amp; Tippen-zum-Bearbeiten\nLassen Sie Ihr Schreiben ohne Ablenkung fließen</string>
     <string name="japanese_aesthetics">Japanische Minimal-Ästhetik</string>
-    <string name="japanese_aesthetics_desc">Drei Kartenstile: Minimal / Milchglas / Flüssigglas\nWarme Designschemata, natürliches und gemütliches visuelles Erlebnis\nJedes Detail sorgfältig gestaltet</string>
+    <string name="japanese_aesthetics_desc">Drei Kartenstile: Minimal / Milchglas / Flüssigwasserglas\nWarme Designschemata, natürliches und gemütliches visuelles Erlebnis\nJedes Detail sorgfältig gestaltet</string>
     <string name="secure_private">Sicher &amp; Privat</string>
     <string name="secure_private_desc">Alle Daten lokal gespeichert, Datenschutz gewährleistet\nVersions-Snapshots, automatisches Speichern, SAF-Dateiverwaltung\nIhre Worte gehören nur Ihnen</string>
     <string name="file_permission_title">Dateizugriffsberechtigung</string>

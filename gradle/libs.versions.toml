@@ -31,6 +31,9 @@ work-runtime = "2.10.0"
 browser = "1.9.0"
 timber = "5.0.1"
 okhttp = "4.12.0"
+# ── 玻璃效果依赖（液态/水玻璃核心）──
+backdrop = "1.0.6"
+liquid = "1.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -91,6 +94,9 @@ work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version
 browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+# ── 玻璃效果依赖（液态/水玻璃核心）──
+backdrop = { group = "io.github.kyant0", name = "backdrop", version.ref = "backdrop" }
+liquid = { group = "io.github.fletchmckee.liquid", name = "liquid", version.ref = "liquid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
